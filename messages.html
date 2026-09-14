@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>主人私信 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); min-height: 100vh; }
+  .dm { max-width: 1060px; margin: 0 auto; padding: 40px 0 90px; }
+  .dm-head { text-align: center; margin-bottom: 26px; }
+  .dm-head h1 { font-size: clamp(24px, 3vw, 32px); font-weight: 900; }
+  .dm-head p { color: var(--ink-soft); margin-top: 8px; font-size: 14.5px; }
+  .dm-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+
+  /* 会话列表 */
+  .sessions { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .sessions h3 { font-size: 13px; color: var(--ink-faint); padding: 6px 10px 8px; letter-spacing: 1px; }
+  .srow { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 16px; cursor: pointer; transition: background .15s; position: relative; }
+  .srow:hover { background: var(--bg-soft); }
+  .srow.on { background: #FFEAD9; }
+  .srow .sn { font-size: 14.5px; font-weight: 800; }
+  .srow .sp2 { font-size: 12px; color: var(--ink-faint); }
+  .srow .prev { font-size: 12px; color: var(--ink-soft); max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .srow .unread { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
+  .nav-dot {
+    display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 999px; background: #FF5F5F; color: #fff; font-size: 11px; font-weight: 800;
+  }
+
+  /* 聊天窗 */
+  .chat { display: flex; flex-direction: column; height: 600px; padding: 0; overflow: hidden; }
+  .chat-head { display: flex; align-items: center; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--line); background: #FFFDFA; }
+  .chat-head .nm { font-weight: 900; font-size: 15.5px; }
+  .chat-head .on { font-size: 12px; color: var(--green-deep); font-weight: 700; }
+  .chat-head .dot-on { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; }
+  .msgs { flex: 1; overflow-y: auto; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(180deg, #FFFDFA, #FFF7EE); }
+  .msg { max-width: 76%; display: flex; gap: 10px; animation: popMsg .25s ease; }
+  .msg .ava { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; overflow: hidden; }
+  .msg .ava img { width: 100%; height: 100%; object-fit: cover; }
+  .msg .body { background: #fff; border: 1px solid var(--line); border-radius: 4px 18px 18px 18px; padding: 11px 16px; font-size: 14.5px; box-shadow: 0 3px 8px rgba(240,116,60,.06); }
+  .msg .time { font-size: 10.5px; color: var(--ink-faint); margin-top: 4px; text-align: right; }
+  .msg.me { align-self: flex-end; flex-direction: row-reverse; }
+  .msg.me .ava { background: var(--grad-primary); color: #fff; font-size: 15px; font-weight: 900; }
+  .msg.me .body { background: var(--grad-primary); color: #fff; border: none; border-radius: 18px 4px 18px 18px; }
+  .msg.me .time { text-align: left; color: rgba(255,255,255,.7); }
+  .typing { display: flex; gap: 4px; padding: 14px 18px; background: #fff; border: 1px solid var(--line); border-radius: 4px 18px 18px 18px; width: fit-content; }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-soft); animation: blink 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .18s; } .typing i:nth-child(3) { animation-delay: .36s; }
+  .quick { display: flex; gap: 8px; padding: 10px 18px 4px; flex-wrap: wrap; }
+  .quick button { border: 1px solid var(--line); background: #fff; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); padding: 6px 14px; transition: all .15s; }
+  .quick button:hover { border-color: var(--primary-soft); color: var(--primary-deep); }
+  .chat-input { display: flex; gap: 10px; padding: 14px 18px 18px; }
+  .chat-input .input { flex: 1; border-radius: 999px; }
+  .chat-input .btn { border-radius: 999px; padding: 0 26px; }
+
+  /* 空态 */
+  .empty { max-width: 520px; margin: 40px auto; text-align: center; padding: 46px 40px; }
+  .empty .big { font-size: 54px; }
+  .empty h2 { font-size: 20px; margin: 14px 0 8px; }
+  .empty p { font-size: 14px; color: var(--ink-soft); margin-bottom: 8px; }
+  .empty .steps { text-align: left; background: var(--bg-soft); border-radius: 16px; padding: 18px 24px; margin: 20px 0; font-size: 13.5px; line-height: 2.1; color: var(--ink-soft); }
+  @media (max-width: 860px) { .dm-grid { grid-template-columns: 1fr; } .chat { height: 520px; } }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap dm" id="app"></div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+renderChrome('nav-msg');
+const qsPet = new URLSearchParams(location.search).get('pet');
+let curId = null;
+let busy = false;
+
+/* ================= 空态 ================= */
+function renderEmpty() {
+  document.getElementById('app').innerHTML = `
+    <div class="card empty">
+      <div class="big">💌</div>
+      <h2>还没有解锁主人私信</h2>
+      <p>主人们平常生活节奏很忙，但平台会替他们守着毛孩子——</p>
+      <div class="steps">
+        1️⃣ 去<a href="square.html" style="color:var(--primary-deep);font-weight:700">宠物广场</a>领养一只 AI 分身的陪伴<br>
+        2️⃣ 日常聊天、喂食、玩耍，把亲密度养到 <b style="color:var(--primary-deep)">80（眼熟了）</b><br>
+        3️⃣ 主人收到通知，你们的私人对话自动开启 🔓
+      </div>
+      <p style="font-size:12.5px;color:var(--ink-faint)">亲密度越高，主人越放心把它的日常托付给你。</p>
+      <a class="btn" href="square.html">🐾 去认识一只毛孩</a>
+    </div>`;
+}
+
+/* ================= 会话视图 ================= */
+function chatOf(id) { return store.getChat(id); }
+
+function render() {
+  const chats = store.getChats();
+  const ids = Object.keys(chats);
+  if (!ids.length) { renderEmpty(); return; }
+  curId = (qsPet && chats[qsPet]) ? qsPet : (curId && chats[curId] ? curId : ids[0]);
+
+  /* 标记已读 */
+  const chat = chats[curId];
+  if (chat.unread) { chat.unread = 0; store.saveChat(curId, chat); updateNavBadge(); }
+
+  const pet = store.getPet(curId);
+  const ownerName = (pet.owner || '主人').split(' · ')[0];
+  document.getElementById('app').innerHTML = `
+    <div class="dm-head">
+      <h1>💌 主人私信</h1>
+      <p>亲密度达标的见证——你们因为爱同一只毛孩子而相识</p>
+    </div>
+    <div class="dm-grid">
+      <div class="card sessions">
+        <h3>已解锁的对话</h3>
+        ${ids.map(id => {
+          const p = store.getPet(id);
+          if (!p) return '';
+          const c = chats[id];
+          const last = c.msgs[c.msgs.length - 1];
+          return `<div class="srow ${id === curId ? 'on' : ''}" onclick="location.href='messages.html?pet=${id}'">
+            ${avatarHTML(p, 46, 24)}
+            <div><div class="sn">${p.name} · ${p.owner.split(' · ')[0]}</div>
+            <div class="prev">${last ? (last.who === 'me' ? '我：' : '') + last.text : ''}</div></div>
+            ${c.unread ? `<span class="unread nav-dot">${c.unread}</span>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card chat">
+        <div class="chat-head">
+          ${avatarHTML(pet, 40, 22)}
+          <div><div class="nm">${ownerName} <small style="color:var(--ink-faint);font-weight:400">· ${pet.name}的主人</small></div>
+          <div class="on"><span class="dot-on"></span>在线 · 平时会比较忙，回复慢一点请见谅</div></div>
+        </div>
+        <div class="msgs" id="msgs"></div>
+        <div class="quick" id="quick"></div>
+        <div class="chat-input">
+          <input class="input" id="inp" placeholder="和${ownerName}聊聊${pet.name}吧…" maxlength="100"
+            onkeydown="if(event.key==='Enter')send()">
+          <button class="btn" onclick="send()">发送</button>
+        </div>
+      </div>
+    </div>`;
+  renderMsgs(pet, chat);
+  renderQuick(pet, ownerName);
+}
+
+function renderMsgs(pet, chat) {
+  const box = document.getElementById('msgs');
+  box.innerHTML = chat.msgs.map(m => {
+    const time = new Date(m.t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return m.who === 'me'
+      ? `<div class="msg me"><div class="ava">${(store.getProfile().name || '我')[0]}</div><div class="body">${esc(m.text)}<div class="time">${time}</div></div></div>`
+      : `<div class="msg"><div class="ava" style="background:#EFE9FF;font-size:19px">🧑</div><div class="body">${esc(m.text)}<div class="time">${time}</div></div></div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+function renderQuick(pet, ownerName) {
+  const qs = pet.memorial
+    ? ['他生前最爱做什么？', '他还好吗……我最近很想他', '谢谢你告诉我这些']
+    : ['它今天乖吗？', '它平时最常做什么？', '它有什么爱吃的？', '有机会想线下见见它'];
+  document.getElementById('quick').innerHTML = qs.map(q => `<button onclick="send('${q}')">${q}</button>`).join('');
+}
+
+/* ================= 发送与主人自动回复 ================= */
+function send(text) {
+  if (busy) return;
+  const inp = document.getElementById('inp');
+  const t = (text !== undefined ? text : inp.value).trim();
+  if (!t) return;
+  if (text === undefined) inp.value = '';
+  const chat = chatOf(curId);
+  chat.msgs.push({ who: 'me', t: Date.now(), text: t });
+  store.saveChat(curId, chat);
+  const pet = store.getPet(curId);
+  renderMsgs(pet, chat);
+  ownerReply(curId, t);
+}
+
+function ownerReply(petId, text) {
+  busy = true;
+  const chat = chatOf(petId);
+  const pet = store.getPet(petId);
+  const box = document.getElementById('msgs');
+  const tip = document.createElement('div');
+  tip.className = 'msg';
+  tip.id = 'typing';
+  tip.innerHTML = `<div class="ava" style="background:#EFE9FF;font-size:19px">🧑</div><div class="typing"><i></i><i></i><i></i></div>`;
+  box.appendChild(tip); box.scrollTop = box.scrollHeight;
+
+  setTimeout(() => {
+    const replies = ownerReplyLines(pet, text);
+    tip.remove();
+    replies.forEach((r, i) => {
+      chat.msgs.push({ who: 'owner', t: Date.now() + i, text: r });
+    });
+    /* 若用户切走，累计未读 */
+    chat.unread = (curId === petId) ? 0 : (chat.unread || 0) + replies.length;
+    store.saveChat(petId, chat);
+    updateNavBadge();
+    if (curId === petId) { renderMsgs(pet, chat); render(); busy = false; }
+    else { render(); busy = false; }
+  }, 1300 + Math.random() * 900);
+}
+
+/* 主人回复库（结合宠物档案） */
+function ownerReplyLines(pet, text) {
+  const habit = pet.habits && pet.habits.length ? pick(pet.habits) : '到处溜达';
+  if (pet.memorial) {
+    if (/爱|做什么|习惯/.test(text)) return [`他呀，${habit}，一想起来嘴角就止不住。`, `谢谢你愿意听我说这些。`];
+    if (/想|还记得|好吗/.test(text)) return [`我最近也总梦见他。你能这么说，他一定听到了 🌈`, `有空常来陪他说说话，他最喜欢热闹了。`];
+    if (/谢谢/.test(text)) return [`该说谢谢的是我。有人记得他，他就一直都在。`];
+    return [`嗯嗯，我在。看到它陪你聊天的记录，我心里特别踏实。`];
+  }
+  if (/乖|今天|近况|怎么样/.test(text)) return [`它今天很乖～就是傍晚在门口蹲了一会儿，估计是想你了 😊`, `你昨天陪它玩的那场，它高兴坏了吧，今天精神头都不一样。`];
+  if (/吃|零食|粮/.test(text)) return [`它最爱${habit.includes('粮') ? '干饭' : '小零食'}啦，不过别喂太多，它嘴馋容易胖 🤣`];
+  if (/做什么|平时|习惯|爱/.test(text)) return [`它平时最喜欢${habit}，家里人都习惯了哈哈。`];
+  if (/线下|见面|见见/.test(text)) return [`好呀！等你们再熟一点，我们就约线下见面，我带它见你 🐾`, `到时候提前跟我说，我把它打扮得帅帅的。`];
+  if (/谢谢|感谢/.test(text)) return [`别客气！${pet.name}有你这样的朋友，是它的福气。`];
+  if (/想它|喜欢|可爱/.test(text)) return [`哈哈它能感受到的。你多来陪陪它，我就放心多了。`];
+  return [
+    pick([`哈哈哈是吗，它现在就趴在我脚边睡觉呢 😴`, `对了对了，我拍了几张它今天的照片，改天发给你`, `你有空多来陪陪它呀，它可喜欢你了`]),
+  ];
+}
+
+/* ================= 启动 ================= */
+const anyChats = Object.keys(store.getChats()).length;
+if (anyChats) render(); else renderEmpty();
+</script>
+</body>
+</html>

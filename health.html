@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宠物健康档案 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); min-height: 100vh; }
+  .health { max-width: 1000px; margin: 0 auto; padding: 40px 0 90px; }
+  .health h1 { text-align: center; font-size: 28px; margin-bottom: 10px; }
+  .health p { text-align: center; color: var(--ink-faint); font-size: 15px; margin-bottom: 36px; }
+  
+  .pet-selector { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+  .pet-select { padding: 12px 24px; border-radius: 999px; background: #fff; border: 2px solid var(--line); font-size: 15px; font-weight: 800; cursor: pointer; }
+  .pet-select.on { background: var(--grad-primary); color: #fff; border-color: transparent; }
+  
+  .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .health-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(240,116,60,.08);
+  }
+  .health-card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #FFEAD9, #FFD4A3);
+    position: relative;
+  }
+  .health-card h3 { font-size: 18px; margin-bottom: 8px; }
+  .health-card p { font-size: 14px; color: #8B5A2B; }
+  .health-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 32px;
+  }
+  
+  .health-card-body {
+    padding: 20px;
+  }
+  .health-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .health-item:last-child { border-bottom: none; }
+  .health-label { font-weight: 600; color: var(--ink-soft); }
+  .health-value { font-weight: 900; }
+  .health-value.upcoming { color: var(--primary-deep); }
+  .health-value.ok { color: var(--green-deep); }
+  .health-value.overdue { color: var(--red-deep); }
+  
+  .health-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+  }
+  .health-actions button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 999px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-add-record {
+    background: var(--bg-soft);
+    color: var(--primary-deep);
+  }
+  .btn-add-record:hover {
+    background: var(--primary-soft);
+  }
+  .btn-import-hospital {
+    background: #FFEAD9;
+    color: var(--primary-deep);
+  }
+  .btn-import-hospital:hover {
+    background: #FFD4A3;
+  }
+  
+  .timeline {
+    margin-top: 30px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 6px 18px rgba(240,116,60,.08);
+  }
+  .timeline h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--bg-soft);
+    border-radius: 12px;
+  }
+  .timeline-date {
+    font-weight: 800;
+    color: var(--primary-deep);
+    white-space: nowrap;
+  }
+  .timeline-content {
+    flex: 1;
+  }
+  .timeline-title {
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .timeline-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  
+  @media (max-width: 768px) {
+    .health-grid { grid-template-columns: 1fr; }
+    .pet-selector { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap health" id="app">
+    <h1>🏥 宠物健康档案</h1>
+    <p>记录疫苗、驱虫、体检，AI提醒每个健康节点</p>
+    
+    <div class="pet-selector">
+      <button class="pet-select on">🐱 橘猫 小橘</button>
+      <button class="pet-select">🐟 热带鱼 小金</button>
+      <button class="pet-select">🐦 文鸟 小彩</button>
+    </div>
+    
+    <div class="health-grid">
+      <!-- 疫苗接种 -->
+      <div class="health-card">
+        <div class="health-card-header">
+          <h3>💉 疫苗接种</h3>
+          <p>疫苗接种记录与下次提醒</p>
+          <span class="health-icon">💉</span>
+        </div>
+        <div class="health-card-body">
+          <div class="health-item">
+            <span class="health-label">猫三联第1针</span>
+            <span class="health-value ok">✓ 已完成</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">猫三联第2针</span>
+            <span class="health-value upcoming">3天后</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">狂犬疫苗</span>
+            <span class="health-value">待接种</span>
+          </div>
+          <div class="health-actions">
+            <button class="btn-add-record">手动添加</button>
+            <button class="btn-import-hospital">医院导入</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 体检记录 -->
+      <div class="health-card">
+        <div class="health-card-header">
+          <h3>🩺 体检记录</h3>
+          <p>定期体检报告与异常指标追踪</p>
+          <span class="health-icon">🩺</span>
+        </div>
+        <div class="health-card-body">
+          <div class="health-item">
+            <span class="health-label">体重</span>
+            <span class="health-value">4.2kg</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">心率</span>
+            <span class="health-value">120次/分</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">下次体检</span>
+            <span class="health-value upcoming">2024年3月15日</span>
+          </div>
+          <div class="health-actions">
+            <button class="btn-add-record">上传报告</button>
+            <button class="btn-add-record">AI解读</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 驱虫记录 -->
+      <div class="health-card">
+        <div class="health-card-header">
+          <h3>🐛 体内外驱虫</h3>
+          <p>防虫计划与用药提醒</p>
+          <span class="health-icon">🐛</span>
+        </div>
+        <div class="health-card-body">
+          <div class="health-item">
+            <span class="health-label">体内驱虫</span>
+            <span class="health-value ok">✓ 12月5日</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">体外驱虫</span>
+            <span class="health-value upcoming">12月20日</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">下次提醒</span>
+            <span class="health-value">每月5日</span>
+          </div>
+          <div class="health-actions">
+            <button class="btn-add-record">记录驱虫</button>
+            <button class="btn-add-record">购买药品</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 健康趋势 -->
+      <div class="health-card">
+        <div class="health-card-header">
+          <h3>📈 健康趋势</h3>
+          <p>AI分析健康变化趋势</p>
+          <span class="health-icon">📈</span>
+        </div>
+        <div class="health-card-body">
+          <div class="health-item">
+            <span class="health-label">运动量</span>
+            <span class="health-value ok">正常</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">食欲</span>
+            <span class="health-value ok">良好</span>
+          </div>
+          <div class="health-item">
+            <span class="health-label">睡眠</span>
+            <span class="health-value ok">充足</span>
+          </div>
+          <div class="health-actions">
+            <button class="btn-add-record">查看分析</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 健康时间线 -->
+    <div class="timeline">
+      <h3>📅 健康事件时间线</h3>
+      <div class="timeline-item">
+        <div class="timeline-date">2024-12-05</div>
+        <div class="timeline-content">
+          <div class="timeline-title">完成体内驱虫</div>
+          <div class="timeline-desc">服用拜宠清，24小时内无异常反应</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2024-11-20</div>
+        <div class="timeline-content">
+          <div class="timeline-title">常规体检</div>
+          <div class="timeline-desc">体重4.2kg，心率120，各项指标正常</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2024-11-10</div>
+        <div class="timeline-content">
+          <div class="timeline-title">猫三联第1针</div>
+          <div class="timeline-desc">无明显不良反应，7天后复查正常</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI健康预警 -->
+    <div class="health-alert" id="health-alert">
+      <h3>🚨 AI健康预警</h3>
+      <div class="alert-content">
+        <p>系统正在监控您的宠物健康数据，发现异常时会在此显示提醒。</p>
+        <div class="health-check">
+          <button class="btn-check" onclick="runHealthCheck()">立即检查</button>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+    // AI健康预警检测
+    function runHealthCheck() {
+      const healthData = store.getPetHealth(pet.id);
+      const alerts = [];
+      
+      // 疫苗提醒
+      const lastVaccine = healthData.vaccinations[healthData.vaccinations.length - 1];
+      if (lastVaccine && new Date() - new Date(lastVaccine.date) > 365 * 24 * 60 * 60 * 1000) {
+        alerts.push({
+          type: 'vaccine',
+          priority: 'high',
+          message: `${pet.name}的疫苗已过期一年，建议尽快接种！`,
+          suggestion: '预约宠物医院接种最新疫苗'
+        });
+      }
+      
+      // 体检提醒
+      const lastCheckup = healthData.checkups[healthData.checkups.length - 1];
+      if (lastCheckup && new Date() - new Date(lastCheckup.date) > 365 * 24 * 60 * 60 * 1000) {
+        alerts.push({
+          type: 'checkup',
+          priority: 'medium',
+          message: `${pet.name}的年度体检已过期，建议进行健康检查`,
+          suggestion: '预约全面体检项目'
+        });
+      }
+      
+      // 驱虫提醒
+      const lastDeworming = healthData.dewormings[healthData.dewormings.length - 1];
+      if (lastDeworming && new Date() - new Date(lastDeworming.date) > 90 * 24 * 60 * 60 * 1000) {
+        alerts.push({
+          type: 'deworming',
+          priority: 'high',
+          message: `${pet.name}需要定期驱虫了！`,
+          suggestion: '购买驱虫药或医院驱虫'
+        });
+      }
+      
+      // 体重异常提醒
+      const weights = healthData.weightRecords.map(r => r.weight);
+      if (weights.length > 1) {
+        const weightChange = weights[weights.length - 1] - weights[weights.length - 2];
+        const baselineWeight = Number(pet.weight) || weights[weights.length - 2] || 1;
+        if (Math.abs(weightChange) > baselineWeight * 0.1) {
+          alerts.push({
+            type: 'weight',
+            priority: 'high',
+            message: `${pet.name}体重变化异常，${weightChange > 0 ? '增加' : '减少'}了${Math.abs(weightChange).toFixed(1)}kg`,
+            suggestion: '调整饮食，观察健康状况，必要时就医'
+          });
+        }
+      }
+      
+      // 显示预警
+      displayHealthAlerts(alerts);
+    }
+    
+    function displayHealthAlerts(alerts) {
+      const alertContainer = document.querySelector('.alert-content');
+      
+      if (alerts.length === 0) {
+        alertContainer.innerHTML = `
+          <p style="color: #4CAF50; font-weight: 700;">✅ 健康状况良好，暂无异常！</p>
+          <div class="health-check">
+            <button class="btn-check" onclick="runHealthCheck()">再次检查</button>
+          </div>
+        `;
+        return;
+      }
+      
+      const priorityColors = {
+        high: '#f44336',
+        medium: '#ff9800',
+        low: '#2196f3'
+      };
+      
+      const priorityNames = {
+        high: '紧急',
+        medium: '注意',
+        low: '提醒'
+      };
+      
+      const alertsHTML = alerts.map(alert => `
+        <div class="alert-item" style="border-left: 4px solid ${priorityColors[alert.priority]}">
+          <div class="alert-header">
+            <span class="alert-priority" style="background: ${priorityColors[alert.priority]}">${priorityNames[alert.priority]}</span>
+            <span class="alert-type">${alert.type}</span>
+          </div>
+          <div class="alert-message">${alert.message}</div>
+          <div class="alert-suggestion">
+            💡 建议：${alert.suggestion}
+          </div>
+          <div class="alert-actions">
+            <button class="btn-action" onclick="resolveAlert('${alert.type}')">已处理</button>
+            <button class="btn-action" onclick="scheduleReminder('${alert.type}')">设置提醒</button>
+          </div>
+        </div>
+      `).join('');
+      
+      alertContainer.innerHTML = `
+        <div class="alerts-list">
+          ${alertsHTML}
+        </div>
+      `;
+    }
+    
+    function resolveAlert(type) {
+      toast(`✅ 已标记"${type}"问题已处理`);
+      // 这里可以添加标记处理的逻辑
+    }
+    
+    function scheduleReminder(type) {
+      const days = prompt('几天后提醒？（输入数字）', '3');
+      if (days) {
+        const reminder = {
+          type: type,
+          days: parseInt(days),
+          scheduled: Date.now()
+        };
+        store.addReminder(reminder);
+        toast(`⏰ 已设置${days}天后的提醒`);
+      }
+    }
+    
+    // 页面加载时检查健康状态
+    window.addEventListener('load', runHealthCheck);
+    </script>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-health');
+const healthPet = getActivePet();
+const pet = healthPet;
+</script>
+</body>
+</html>

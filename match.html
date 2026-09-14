@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>契合度测试 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); }
+  .quiz-wrap { max-width: 680px; margin: 0 auto; padding: 70px 0 90px; }
+  .progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 36px; }
+  .progress i { width: 34px; height: 8px; border-radius: 999px; background: #F0DFCC; transition: background .3s; }
+  .progress i.done { background: var(--primary); }
+  .qcard { text-align: center; padding: 48px 40px 40px; }
+  .qcard .no { font-size: 13px; font-weight: 800; color: var(--primary-deep); letter-spacing: 2px; }
+  .qcard h2 { font-size: 24px; font-weight: 900; margin: 14px 0 34px; }
+  .opts { display: grid; gap: 13px; text-align: left; }
+  .opt {
+    padding: 16px 22px; border-radius: 18px; border: 1.5px solid var(--line);
+    background: #FFFDFA; font-size: 15px; cursor: pointer; transition: all .16s;
+  }
+  .opt:hover { border-color: var(--primary-soft); background: #FFF6EC; transform: translateX(4px); }
+  .opt .em { margin-right: 10px; }
+  .qnav { display: flex; justify-content: space-between; margin-top: 26px; }
+  .linkbtn { background: none; border: none; color: var(--ink-faint); font-size: 14px; font-weight: 700; }
+  .linkbtn:hover { color: var(--primary-deep); }
+
+  /* 结果页 */
+  .result-wrap { max-width: 860px; margin: 0 auto; padding: 70px 0 90px; text-align: center; }
+  .result-title { font-size: 26px; font-weight: 900; }
+  .result-sub { color: var(--ink-soft); margin: 10px 0 40px; }
+  .top-card { display: grid; grid-template-columns: 300px 1fr; gap: 0; text-align: left; overflow: hidden; }
+  .top-left {
+    background: linear-gradient(160deg, #FFF3E6, #FFE3C8);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 44px 24px; gap: 12px;
+  }
+  .score-ring { position: relative; width: 130px; height: 130px; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring .val {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-size: 32px; font-weight: 900; color: var(--primary-deep);
+  }
+  .score-ring .val small { font-size: 12px; color: var(--ink-faint); display: block; text-align: center; font-weight: 700; }
+  .top-right { padding: 40px 36px; }
+  .top-right h2 { font-size: 26px; font-weight: 900; }
+  .top-right .meta { color: var(--ink-faint); font-size: 13px; margin: 4px 0 18px; }
+  .reason { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; font-size: 14.5px; color: var(--ink-soft); }
+  .reason b { color: var(--ink); }
+  .reason .ic { font-size: 17px; }
+  .others { margin-top: 26px; text-align: left; }
+  .others h3 { font-size: 15px; color: var(--ink-faint); margin-bottom: 14px; text-align: center; }
+  .orow { display: flex; align-items: center; gap: 14px; padding: 14px 20px; }
+  .orow b { font-size: 15.5px; }
+  .orow .sc { margin-left: auto; font-weight: 900; color: var(--primary-deep); }
+  .orow .btn { margin-left: 12px; }
+  .rbtns { display: flex; gap: 12px; margin-top: 24px; }
+  @media (max-width: 760px) {
+    .top-card { grid-template-columns: 1fr; }
+    .orow { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+  <div id="app"></div>
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-match');
+const app = document.getElementById('app');
+
+/* ================= 问卷视图 ================= */
+let cur = 0;
+const answers = [];
+
+function renderQuiz() {
+  const q = QUIZ[cur];
+  app.innerHTML = `
+  <div class="quiz-wrap">
+    <div class="progress">${QUIZ.map((_, i) => `<i class="${i <= cur ? 'done' : ''}"></i>`).join('')}</div>
+    <div class="card qcard">
+      <div class="no">QUESTION ${cur + 1} / ${QUIZ.length}</div>
+      <h2>${q.q}</h2>
+      <div class="opts">
+        ${q.opts.map((o, i) => `<div class="opt" onclick="choose(${i})"><span class="em">${['🌸', '🌼', '🍀', '🌻'][i]}</span>${o.t}</div>`).join('')}
+      </div>
+      <div class="qnav">
+        <button class="linkbtn" onclick="back()">← 上一题</button>
+        <span style="font-size:13px;color:var(--ink-faint)">选择最贴近你的一项</span>
+      </div>
+    </div>
+  </div>`;
+}
+function choose(i) {
+  answers[cur] = QUIZ[cur].opts[i];
+  if (cur < QUIZ.length - 1) { cur++; renderQuiz(); }
+  else finish();
+}
+function back() { if (cur > 0) { cur--; renderQuiz(); } }
+
+/* ================= 计算契合度 ================= */
+function userVec() {
+  const dims = ['active', 'clingy', 'calm', 'warm', 'interact'];
+  const sum = {}, cnt = {};
+  dims.forEach(d => { sum[d] = 0; cnt[d] = 0; });
+  answers.forEach(o => {
+    for (const d in o.vec) { sum[d] += o.vec[d]; cnt[d]++; }
+  });
+  const v = {};
+  dims.forEach(d => v[d] = cnt[d] ? sum[d] / cnt[d] : 50);
+  return v;
+}
+
+function scoreOf(pet, u) {
+  const dims = Object.keys(u);
+  let diff = 0;
+  dims.forEach(d => diff += Math.abs(u[d] - pet.vec[d]));
+  const meanDiff = diff / dims.length;
+  const score = Math.round(100 - meanDiff);
+  return Math.min(99, Math.max(50, score));
+}
+
+function reasonsOf(pet, u) {
+  const dims = Object.keys(u);
+  const align = dims.map(d => {
+    const p = pet.vec[d];
+    const a = 1 - Math.abs(u[d] - p) / 100;
+    return { d, a, dir: p >= 60 ? 'hi' : 'lo' };
+  }).sort((x, y) => y.a - x.a);
+  return align.slice(0, 3).map(x => VEC_REASON[x.d][x.dir]);
+}
+
+function finish() {
+  const u = userVec();
+  const results = store.getPets()
+    .map(p => ({ pet: p, score: scoreOf(p, u), reasons: reasonsOf(p, u) }))
+    .sort((a, b) => b.score - a.score);
+  store.saveProfile({ ...store.getProfile(), quiz: { done: true, results: results.map(r => ({ petId: r.pet.id, score: r.score })) } });
+  renderResult(results);
+}
+
+/* ================= 结果视图 ================= */
+function renderResult(results) {
+  const top = results[0];
+  const R = 54, C = 2 * Math.PI * R;
+  app.innerHTML = `
+  <div class="result-wrap">
+    <div class="result-title">🎯 你的灵魂毛孩是——</div>
+    <div class="result-sub">基于 8 道性格问卷与 5 维陪伴画像计算 · 匹配结果已同步到宠物广场</div>
+
+    <div class="card top-card">
+      <div class="top-left">
+        ${avatarHTML(top.pet, 110, 60)}
+        <div class="score-ring">
+          <svg width="130" height="130">
+            <circle cx="65" cy="65" r="${R}" fill="none" stroke="#F3E0CB" stroke-width="11"/>
+            <circle cx="65" cy="65" r="${R}" fill="none" stroke="url(#g1)" stroke-width="11"
+              stroke-linecap="round" stroke-dasharray="${C * top.score / 100} ${C}"/>
+            <defs><linearGradient id="g1"><stop offset="0" stop-color="#FFB37E"/><stop offset="1" stop-color="#FF8A5C"/></linearGradient></defs>
+          </svg>
+          <div class="val">${top.score}%<small>契合度</small></div>
+        </div>
+      </div>
+      <div class="top-right">
+        <h2>${top.pet.emoji} ${top.pet.name}</h2>
+        <div class="meta">${SPECIES[top.pet.species].label} · ${top.pet.breed} · ${STYLES[top.pet.style].label} · 主人：${top.pet.owner}</div>
+        <div class="reason"><span class="ic">💗</span><span>${top.reasons[0]}，<b>这是你们最对味的地方</b>。</span></div>
+        <div class="reason"><span class="ic">🌸</span><span>${top.reasons[1]}。</span></div>
+        <div class="reason"><span class="ic">🌿</span><span>${top.reasons[2]}。</span></div>
+        <div class="rbtns">
+          <button class="btn" onclick="goCompanion('${top.pet.id}')">💬 去和 ${top.pet.name} 打个招呼</button>
+          <button class="btn ghost" onclick="restart()">重新测试</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="others">
+      <h3>—— 其他也很契合的毛孩 ——</h3>
+      ${results.slice(1, 4).map(r => `
+        <div class="card orow">
+          ${avatarHTML(r.pet, 48, 26)}
+          <div><b>${r.pet.name}</b><div style="font-size:12.5px;color:var(--ink-faint)">${SPECIES[r.pet.species].label} · ${STYLES[r.pet.style].label}</div></div>
+          <div class="sc">${r.score}%</div>
+          <button class="btn small ghost" onclick="goCompanion('${r.pet.id}')">互动</button>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+function restart() { cur = 0; answers.length = 0; renderQuiz(); }
+
+/* 若已测过，直接展示历史结果 */
+const saved = store.getProfile().quiz;
+if (saved && saved.done) {
+  const u = null;
+  const pets = store.getPets();
+  const results = saved.results.map(r => ({ pet: pets.find(p => p.id === r.petId), score: r.score, reasons: [] })).filter(r => r.pet).sort((a, b) => b.score - a.score);
+  /* 历史结果没有缓存理由，重算一次用于展示 */
+  const uu = { active: 50, clingy: 50, calm: 50, warm: 50, interact: 50 };
+  results.forEach(r => r.reasons = reasonsOf(r.pet, uu));
+  renderResult(results);
+} else {
+  renderQuiz();
+}
+</script>
+</body>
+</html>

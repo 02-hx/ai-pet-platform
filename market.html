@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>临时投喂服务 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); min-height: 100vh; }
+  .market { max-width: 1200px; margin: 0 auto; padding: 40px 0 90px; }
+  .market h1 { text-align: center; font-size: 28px; margin-bottom: 10px; }
+  .market p { text-align: center; color: var(--ink-faint); font-size: 15px; margin-bottom: 36px; }
+  .market-tabs { display: flex; justify-content: center; gap: 6px; margin-bottom: 30px; }
+  .tab-btn { padding: 10px 24px; border-radius: 999px; font-weight: 800; font-size: 14px; transition: all .18s; }
+  .tab-btn.on { background: var(--grad-primary); color: #fff; }
+  .tab-btn:not(.on) { background: var(--bg-soft); color: var(--ink-soft); }
+  
+  .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+  .task-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 5px 16px rgba(240,116,60,.08); transition: transform .18s; }
+  .task-card:hover { transform: translateY(-3px); }
+  .task-header { padding: 20px; border-bottom: 1px solid var(--line); }
+  .task-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .task-avatar { width: 48px; height: 48px; border-radius: 12px; }
+  .task-info { flex: 1; }
+  .task-pet-name { font-weight: 900; font-size: 16px; }
+  .task-owner { font-size: 13px; color: var(--ink-faint); }
+  .task-price { font-size: 18px; font-weight: 900; color: var(--primary-deep); }
+  .task-title { font-size: 16px; margin-bottom: 8px; }
+  .task-desc { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+  .task-tags { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .tag { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .tag-orange { background: #FFF3E9; color: var(--primary-deep); }
+  .tag-green { background: #E4F5EC; color: var(--green-deep); }
+  .tag-blue { background: #EEF4FF; color: #3B7FFF; }
+  
+  .task-footer { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .task-time { font-size: 12.5px; color: var(--ink-faint); }
+  .btn-task { padding: 8px 20px; font-size: 14px; font-weight: 800; }
+  
+  .publish-box {
+    background: linear-gradient(135deg, #FFEAD9, #FFD4A3);
+    border-radius: 20px; padding: 30px; margin-bottom: 30px;
+    text-align: center;
+  }
+  .publish-box h3 { font-size: 20px; margin-bottom: 16px; }
+  .publish-box p { font-size: 15px; color: #8B5A2B; margin-bottom: 20px; }
+  
+  @media (max-width: 768px) { .task-grid { grid-template-columns: 1fr; } .market-tabs { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap market" id="app">
+    <h1>🏠 临时投喂服务市场</h1>
+    <p>真实世界中的毛孩子需要临时照顾？让靠谱的陪伴者上门服务</p>
+    
+    <div class="market-tabs">
+      <button class="tab-btn on" onclick="showTab('tasks')">投喂需求</button>
+      <button class="tab-btn" onclick="showTab('my-tasks')">我的发布</button>
+      <button class="tab-btn" onclick="showTab('history')">历史记录</button>
+    </div>
+    
+    <!-- 发布新需求入口 -->
+    <div class="publish-box" id="publish-box">
+      <h3>🚀 发布新需求</h3>
+      <p>出差、旅行或临时有事？让信任的陪伴者帮你照顾毛孩子</p>
+      <button class="btn" onclick="showPublishForm()">立即发布</button>
+    </div>
+    
+    <!-- 任务列表 -->
+    <div class="task-grid" id="tasks-list">
+      <!-- 示例任务卡片 -->
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-meta">
+            <div class="task-avatar">🐱</div>
+            <div class="task-info">
+              <div class="task-pet-name">小橘</div>
+              <div class="task-owner">主人：李姨 · 上海浦东</div>
+            </div>
+            <div class="task-price">¥50</div>
+          </div>
+          <div class="task-title">出差3天，需要帮忙喂猫</div>
+          <div class="task-desc">12月15-17日，每天早晚各喂一次，猫粮已备好。最好能视频发一下毛孩子状态。</div>
+          <div class="task-tags">
+            <span class="tag tag-orange">上门喂猫</span>
+            <span class="tag tag-green">每天2次</span>
+            <span class="tag tag-blue">视频确认</span>
+          </div>
+        </div>
+        <div class="task-footer">
+          <div class="task-time">发布于 2小时前</div>
+          <button class="btn btn-task">接单</button>
+        </div>
+      </div>
+      
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-meta">
+            <div class="task-avatar">🐶</div>
+            <div class="task-info">
+              <div class="task-pet-name">豆豆</div>
+              <div class="task-owner">主人：王先生 · 北京朝阳</div>
+            </div>
+            <div class="task-price">¥80</div>
+          </div>
+          <div class="task-title">周末遛狗 + 早晚喂食</div>
+          <div class="task-desc">12月16-17日，每天早晚各喂食+遛狗30分钟。狗狗很活泼，需要耐心。</div>
+          <div class="task-tags">
+            <span class="tag tag-orange">遛狗</span>
+            <span class="tag tag-green">早晚各1次</span>
+            <span class="tag tag-blue">活泼型</span>
+          </div>
+        </div>
+        <div class="task-footer">
+          <div class="task-time">发布于 5小时前</div>
+          <button class="btn btn-task">接单</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 我的发布和历史（占位） -->
+    <div class="task-grid" id="my-tasks-list" style="display:none">
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-meta">
+            <div class="task-avatar">🐱</div>
+            <div class="task-info">
+              <div class="task-pet-name">团团</div>
+              <div class="task-owner">主人：你 · 上海徐汇</div>
+            </div>
+            <div class="task-price">¥60</div>
+          </div>
+          <div class="task-title">下周照顾3天（已有人接单）</div>
+          <div class="task-desc">12月20-22日，小王已接单，每天早晚喂食，视频发状态。</div>
+          <div class="task-tags">
+            <span class="tag tag-green">已接单</span>
+            <span class="tag tag-blue">陪伴者：小王</span>
+          </div>
+        </div>
+        <div class="task-footer">
+          <div class="task-time">发布于 1天前</div>
+          <button class="btn btn-task" disabled style="opacity:0.5">已接单</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 历史记录 -->
+    <div class="task-grid" id="history-list" style="display:none">
+      <div class="task-card">
+        <div class="task-header">
+          <div class="task-meta">
+            <div class="task-avatar">🐱</div>
+            <div class="task-info">
+              <div class="task-pet-name">咪咪</div>
+              <div class="task-owner">主人：张阿姨 · 北京海淀</div>
+            </div>
+            <div class="task-price">¥45</div>
+          </div>
+          <div class="task-title">上周帮忙喂猫（已完成）</div>
+          <div class="task-desc">服务时间：12月8-10日，服务评分：⭐⭐⭐⭐⭐</div>
+          <div class="task-tags">
+            <span class="tag tag-green">已完成</span>
+            <span class="tag tag-blue">服务者：小李</span>
+          </div>
+        </div>
+        <div class="task-footer">
+          <div class="task-time">完成于 1周前</div>
+          <button class="btn btn-task">查看详情</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-market');
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  event.target.classList.add('on');
+  
+  document.querySelectorAll('.task-grid').forEach(g => g.style.display = 'none');
+  if (tab === 'tasks') document.getElementById('tasks-list').style.display = 'grid';
+  else if (tab === 'my-tasks') document.getElementById('my-tasks-list').style.display = 'grid';
+  else if (tab === 'history') document.getElementById('history-list').style.display = 'grid';
+}
+
+function showPublishForm() {
+  alert('发布功能开发中...请先在社区论坛发布需求');
+}
+</script>
+</body>
+</html>

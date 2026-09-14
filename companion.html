@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>互动房间 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2 0%, #FFF3E6 100%); min-height: 100vh; }
+  .room { max-width: 1120px; margin: 0 auto; padding: 40px 0 90px; display: grid; grid-template-columns: 400px 1fr; gap: 24px; align-items: start; }
+
+  /* ---------- 左：宠物舞台 ---------- */
+  .stage { padding: 30px 28px 26px; position: sticky; top: 88px; }
+  .stage .switch { position: absolute; top: 20px; right: 22px; font-size: 12.5px; color: var(--ink-faint); font-weight: 700; }
+  .stage .switch:hover { color: var(--primary-deep); }
+  .mem-banner {
+    background: linear-gradient(135deg, #EFE9FF, #E4DAFB); color: #6B4FC9;
+    border-radius: 14px; font-size: 12.5px; font-weight: 700;
+    padding: 9px 14px; text-align: center; margin-bottom: 18px;
+  }
+  .stage .pet-zone { text-align: center; padding: 8px 0 4px; position: relative; }
+  .stage .pet-avatar { width: 132px; height: 132px; font-size: 74px; margin: 0 auto; animation: wiggle 4.5s ease-in-out infinite; }
+  .mood-bubble {
+    display: inline-block; position: relative; margin-top: 14px;
+    background: #fff; border: 1.5px solid var(--line); border-radius: 18px;
+    padding: 9px 18px; font-size: 13.5px; color: var(--ink-soft);
+  }
+  .mood-bubble::before {
+    content: ''; position: absolute; top: -7px; left: 50%; margin-left: -7px;
+    width: 14px; height: 14px; background: #fff; border-left: 1.5px solid var(--line); border-top: 1.5px solid var(--line);
+    transform: rotate(45deg);
+  }
+  .stage h2 { text-align: center; font-size: 24px; font-weight: 900; margin-top: 14px; }
+  .stage .pmeta { text-align: center; font-size: 12.5px; color: var(--ink-faint); margin-bottom: 18px; }
+
+  .stat { margin-bottom: 12px; }
+  .stat .lab { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+  .stat .bar { height: 9px; border-radius: 999px; background: #F4E6D4; overflow: hidden; }
+  .stat .bar i { display: block; height: 100%; border-radius: 999px; transition: width .5s; }
+  .bar.mood i { background: linear-gradient(90deg, #9AD9BC, #5FB891); }
+  .bar.hunger i { background: linear-gradient(90deg, #FFD59E, #FF9A62); }
+  .bar.energy i { background: linear-gradient(90deg, #CDBBF2, #9F86E0); }
+
+  .aff-box { background: var(--bg-soft); border-radius: 18px; padding: 16px 18px; margin: 20px 0 18px; }
+  .aff-box .row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .aff-box .lv { font-size: 15px; font-weight: 900; color: var(--primary-deep); }
+  .aff-box .num { font-size: 12px; color: var(--ink-faint); font-weight: 700; }
+  .aff-box .track { height: 10px; border-radius: 999px; background: #F0DFCC; overflow: hidden; }
+  .aff-box .track i { display: block; height: 100%; background: var(--grad-primary); border-radius: 999px; transition: width .6s; }
+  .aff-box .next { font-size: 11.5px; color: var(--ink-faint); margin-top: 6px; }
+
+  .act-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+
+  /* ---------- 主人连接卡片 ---------- */
+  .owner-card {
+    margin: 0 0 18px; border-radius: 18px; padding: 15px 16px;
+    background: linear-gradient(135deg, #EFE9FF, #E4DAFB);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .owner-card .oc-em { font-size: 24px; flex-shrink: 0; }
+  .owner-card .oc-body { flex: 1; min-width: 0; }
+  .owner-card .oc-t { font-size: 13.5px; font-weight: 900; color: #5C44B8; }
+  .owner-card .oc-s { font-size: 11.5px; color: #8A76D8; line-height: 1.5; margin-top: 2px; }
+  .owner-card .oc-bar { height: 6px; border-radius: 999px; background: rgba(92,68,184,.15); margin-top: 7px; overflow: hidden; }
+  .owner-card .oc-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #9F86E0, #6B4FC9); transition: width .5s; }
+  .owner-card.unlocked { background: linear-gradient(135deg, #E4F5EC, #D2EEDF); }
+  .owner-card.unlocked .oc-t { color: var(--green-deep); }
+  .owner-card.unlocked .oc-s { color: #5FA986; }
+  .owner-card .btn { padding: 8px 14px; font-size: 12.5px; flex-shrink: 0; }
+
+  .act {
+    border: 1.5px solid var(--line); background: #fff; border-radius: 16px;
+    padding: 11px 4px; text-align: center; font-size: 12px; font-weight: 700; color: var(--ink-soft);
+    transition: all .15s;
+  }
+  .act .em { display: block; font-size: 21px; margin-bottom: 3px; }
+  .act:hover { border-color: var(--primary-soft); background: #FFF6EC; transform: translateY(-2px); }
+  .act:disabled { opacity: .55; transform: none; }
+
+  /* ---------- 右：聊天 ---------- */
+  .chat-card { display: flex; flex-direction: column; height: 640px; padding: 0; overflow: hidden; }
+  .chat-head { display: flex; align-items: center; gap: 12px; padding: 16px 22px; border-bottom: 1px solid var(--line); background: #FFFDFA; }
+  .chat-head .nm { font-weight: 900; font-size: 16px; }
+  .chat-head .on { font-size: 12px; color: var(--green-deep); font-weight: 700; }
+  .chat-head .dot-on { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; }
+  .msgs { flex: 1; overflow-y: auto; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(180deg, #FFFDFA, #FFF7EE); }
+  .msg { max-width: 78%; display: flex; gap: 10px; animation: popMsg .25s ease; }
+  .msg .ava { width: 38px; height: 38px; font-size: 21px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+  .msg .body { background: #fff; border: 1px solid var(--line); border-radius: 4px 18px 18px 18px; padding: 11px 16px; font-size: 14.5px; box-shadow: 0 3px 8px rgba(240,116,60,.06); }
+  .msg.me { align-self: flex-end; flex-direction: row-reverse; }
+  .msg.me .ava { background: var(--grad-primary); color: #fff; font-size: 16px; font-weight: 900; }
+  .msg.me .body { background: var(--grad-primary); color: #fff; border: none; border-radius: 18px 4px 18px 18px; }
+  .typing { display: flex; gap: 4px; padding: 14px 18px; background: #fff; border: 1px solid var(--line); border-radius: 4px 18px 18px 18px; width: fit-content; }
+  .typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--primary-soft); animation: blink 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .18s; } .typing i:nth-child(3) { animation-delay: .36s; }
+  .quick { display: flex; gap: 8px; padding: 10px 18px 4px; flex-wrap: wrap; }
+  .quick button { border: 1px solid var(--line); background: #fff; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); padding: 6px 14px; transition: all .15s; }
+  .quick button:hover { border-color: var(--primary-soft); color: var(--primary-deep); }
+  .chat-input { display: flex; gap: 10px; padding: 14px 18px 18px; }
+  .chat-input .input { flex: 1; border-radius: 999px; }
+  .chat-input .btn { border-radius: 999px; padding: 0 26px; }
+
+  /* ---------- 记忆 ---------- */
+  .mem-card { grid-column: 1 / -1; padding: 28px 30px; }
+  .mem-card h3 { font-size: 17px; margin-bottom: 6px; }
+  .mem-card .hint { font-size: 13px; color: var(--ink-faint); margin-bottom: 18px; }
+  .mem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .mem-item { background: var(--bg-soft); border-radius: 14px; padding: 13px 16px; font-size: 13px; color: var(--ink-soft); display: flex; gap: 9px; align-items: flex-start; }
+  .mem-item .ic { font-size: 15px; }
+  .mem-empty { grid-column: 1/-1; text-align: center; color: var(--ink-faint); font-size: 13.5px; padding: 18px 0; }
+
+  @media (max-width: 980px) {
+    .room { grid-template-columns: 1fr; }
+    .stage { position: static; }
+    .chat-card { height: 560px; }
+  }
+/* 纪念日通知样式 */
+.memorial-notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: linear-gradient(135deg, #FFEAD9, #FFD4A3);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  z-index: 1000;
+  animation: slideIn 0.5s ease;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.memorial-icon {
+  font-size: 32px;
+  animation: bounce 1s ease infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.memorial-content h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+  .memorial-content p {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+  }
+  
+  /* 情绪报告 */
+  .mood-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      z-index: 1001;
+      max-width: 400px;
+      width: 90%;
+      animation: modalIn 0.3s ease;
+  }
+  @keyframes modalIn {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  .mood-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+  }
+  .mood-emoji {
+      font-size: 28px;
+  }
+  .mood-name {
+      font-size: 18px;
+      font-weight: 900;
+      flex: 1;
+  }
+  .mood-confidence {
+      font-size: 12px;
+      background: #E8F5E9;
+      color: #4CAF50;
+      padding: 4px 8px;
+      border-radius: 999px;
+  }
+  .mood-section {
+      margin-bottom: 16px;
+  }
+  .mood-section h4 {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--primary-deep);
+  }
+  .mood-section p, .mood-section ul {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+  }
+  .mood-section ul {
+      margin: 0;
+      padding-left: 16px;
+  }
+  .mood-section li {
+      margin-bottom: 4px;
+  }
+  .mood-modal::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+  }
+
+
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap">
+    <div class="room" id="room">
+      <!-- 左：宠物舞台 -->
+      <div class="card stage" id="stage"></div>
+
+      <!-- 右：聊天 -->
+      <div class="card chat-card">
+        <div class="chat-head" id="chat-head"></div>
+        <div class="msgs" id="msgs"></div>
+        <div class="quick" id="quick"></div>
+        <div class="chat-input">
+          <input class="input" id="inp" placeholder="和它说点什么吧…" maxlength="80"
+            onkeydown="if(event.key==='Enter')send()">
+          <button class="btn" onclick="send()">发送</button>
+        </div>
+      </div>
+
+      <!-- 记忆碎片 -->
+      <div class="card mem-card">
+        <h3>🧩 记忆碎片</h3>
+        <div class="hint">它记得你们之间重要的小事——这些是感情的证据</div>
+        <div class="mem-grid" id="memgrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 初见模态 -->
+  <div class="modal-mask" id="modal">
+    <div class="modal">
+      <div id="m-ava"></div>
+      <h2 style="margin-top:14px" id="m-title"></h2>
+      <p style="color:var(--ink-soft);font-size:14px;margin:12px 0 20px" id="m-desc"></p>
+      <input class="input" id="m-name" placeholder="怎么称呼你？（可以跳过）" maxlength="12" style="text-align:center">
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn" style="flex:1" onclick="meetDone()">🤝 开始认识</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" id="footer" style="margin-top:0"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+renderChrome('');
+const pet = getActivePet();
+let profile = store.getProfile();
+let bond = store.getBond(pet.id) || newBond();
+bond = applyStatusDrift(bond);
+store.saveBond(pet.id, bond);
+
+const $msgs = document.getElementById('msgs');
+let busy = false;
+
+/* ================= 舞台渲染 ================= */
+function renderStage() {
+  const lv = levelOf(bond.affinity);
+  const s = bond.status;
+  document.getElementById('stage').innerHTML = `
+    <a class="switch" href="square.html">↔ 换一只毛孩</a>
+    ${pet.memorial ? '<div class="mem-banner">🌈 数字纪念馆 · 它在云上，一直陪着你</div>' : ''}
+    <div class="pet-zone">
+      <div class="pet-avatar hue-${pet.hue ?? 0}"><span>${pet.emoji}</span></div>
+      <div class="mood-bubble" id="mood">${moodLine()}</div>
+    </div>
+    <h2>${pet.name}</h2>
+    <div class="pmeta">${SPECIES[pet.species].label} · ${pet.breed} · ${STYLES[pet.style].label} · 主人：${pet.owner}</div>
+
+    <div class="stat"><div class="lab"><span>💗 心情</span><span>${Math.round(s.mood)}</span></div>
+      <div class="bar mood"><i style="width:${s.mood}%"></i></div></div>
+    <div class="stat"><div class="lab"><span>🍖 饱食</span><span>${Math.round(s.hunger)}</span></div>
+      <div class="bar hunger"><i style="width:${s.hunger}%"></i></div></div>
+    <div class="stat"><div class="lab"><span>⚡ 精力</span><span>${Math.round(s.energy)}</span></div>
+      <div class="bar energy"><i style="width:${s.energy}%"></i></div></div>
+
+    <div class="aff-box">
+      <div class="row"><span class="lv">💞 ${lv.name}</span><span class="num">亲密度 ${bond.affinity} / 1000</span></div>
+      <div class="track"><i style="width:${lv.progress * 100}%"></i></div>
+      <div class="next">${lv.next ? `再积累 ${lv.next.min - bond.affinity} 点亲密度，升级为「${lv.next.name}」` : '已满级：你们是彼此的灵魂伴侣 🌟'}</div>
+    </div>
+
+    ${ownerCardHTML()}
+
+    <div class="act-grid">
+      ${pet.memorial
+        ? `<button class="act" onclick="doAction('touch')"><span class="em">🕯️</span>点亮回忆</button>
+           <button class="act" onclick="doAction('touch')"><span class="em">🫶</span>摸摸头</button>
+           <button class="act" onclick="prefill('我好想你，你在云上还好吗')"><span class="em">💭</span>说说想念</button>
+           <button class="act" onclick="doAction('night')"><span class="em">🌙</span>晚安</button>`
+        : `<button class="act" onclick="doAction('feed')"><span class="em">🍖</span>喂食</button>
+           <button class="act" onclick="doAction('play')"><span class="em">🎾</span>玩耍</button>
+           <button class="act" onclick="doAction('touch')"><span class="em">🫶</span>抚摸</button>
+           <button class="act" onclick="doAction('night')"><span class="em">🌙</span>晚安</button>
+           <button class="act" onclick="generateEmoji()" style="background: #FFEAD9; color: #FF8A00;"><span class="em">✨</span>表情包</button>
+           <button class="act" onclick="showMoodReport()" style="background: #E3F2FD; color: #2196F3;"><span class="em">🧠</span>情绪分析</button>`}
+    </div>`;
+}
+
+function moodLine() {
+  const s = bond.status;
+  if (pet.memorial) return pick(['在云上看着你呢 ☁️', '刚刚风把你的名字吹过来了', '一直都在，想你的时候数云朵玩。']);
+  if (s.hunger < 30) return pick(['肚子在咕咕叫了……想吃小罐罐 🍖', '有点饿了，你发现了吗？']);
+  if (s.energy < 25) return pick(['（打了个大大的哈欠）zzZ…', '好困呀，但想等你上线再睡。']);
+  if (s.mood < 35) return pick(['有点蔫蔫的……', '今天有点无聊，想你了。']);
+  return pick(['心情不错！就等你来玩了 🐾', '刚晒完太阳，毛茸茸暖乎乎的～', '在窗边看鸟，看到第三只了！', '今天也是想你的一天。']);
+}
+
+/* 主人连接卡片：亲密度达标解锁与主人的私信 */
+function ownerCardHTML() {
+  const ownerName = (pet.owner || '主人').split(' · ')[0];
+  if (bond.affinity >= CHAT_UNLOCK || store.getChat(pet.id)) {
+    if (!store.getChat(pet.id)) store.unlockChat(pet.id);
+    return `<div class="owner-card unlocked">
+      <span class="oc-em">💌</span>
+      <div class="oc-body">
+        <div class="oc-t">主人私信已解锁</div>
+        <div class="oc-s">${ownerName}想认识正在陪伴${pet.name}的你 · 聊聊它的近况</div>
+      </div>
+      <button class="btn" onclick="location.href='messages.html?pet=${pet.id}'">去私信</button>
+    </div>`;
+  }
+  const pct = Math.min(100, Math.round(bond.affinity / CHAT_UNLOCK * 100));
+  return `<div class="owner-card">
+    <span class="oc-em">🔒</span>
+    <div class="oc-body">
+      <div class="oc-t">与主人的私人对话</div>
+      <div class="oc-s">亲密度达到 ${CHAT_UNLOCK}（眼熟了）解锁 · 让${pet.name}的主人知道，它一直有人陪</div>
+      <div class="oc-bar"><i style="width:${pct}%"></i></div>
+    </div>
+  </div>`;
+}
+
+/* ================= 聊天渲染 ================= */
+function renderHead() {
+  document.getElementById('chat-head').innerHTML = `
+    ${avatarHTML(pet, 40, 22)}
+    <div><div class="nm">${pet.name} · AI分身</div>
+    <div class="on"><span class="dot-on"></span>在线 · 随时回应你</div></div>`;
+}
+
+function scrollBottom() { $msgs.scrollTop = $msgs.scrollHeight; }
+
+function addMsg(who, html, isHTML) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  div.innerHTML = who === 'me'
+    ? `<div class="ava">${(profile.name || '我')[0]}</div><div class="body">${isHTML ? html : esc(html)}</div>`
+    : `<div class="ava hue-${pet.hue ?? 0}">${pet.emoji}</div><div class="body">${isHTML ? html : esc(html)}</div>`;
+  $msgs.appendChild(div);
+  scrollBottom();
+}
+function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+function typing(on) {
+  document.getElementById('typing')?.remove();
+  if (on) {
+    const d = document.createElement('div');
+    d.className = 'msg'; d.id = 'typing';
+    d.innerHTML = `<div class="ava hue-${pet.hue ?? 0}">${pet.emoji}</div><div class="typing"><i></i><i></i><i></i></div>`;
+    $msgs.appendChild(d);
+    scrollBottom();
+  }
+}
+
+/* 依次吐出宠物的多段回复 */
+function petSpeak(parts, done) {
+  typing(true);
+  let i = 0;
+  (function next() {
+    if (i >= parts.length) { typing(false); done && done(); return; }
+    setTimeout(() => { typing(false); addMsg('pet', parts[i++]); typing(true); next(); }, i === 0 ? 750 : 1100);
+  })();
+}
+
+/* ================= 互动逻辑 ================= */
+function gainAffinity(gain, moodDelta, memory) {
+  const before = levelOf(bond.affinity).idx;
+  const beforeUnlock = bond.affinity >= CHAT_UNLOCK;
+  bond.affinity = clamp(bond.affinity + gain, 0, 1000);
+  bond.status.mood = clamp(bond.status.mood + (moodDelta || 0), 0, 100);
+  if (memory) { bond.memories.unshift(memory); bond.memories = bond.memories.slice(0, 30); }
+  const after = levelOf(bond.affinity).idx;
+  store.saveBond(pet.id, bond);
+  renderStage(); renderMemories();
+  if (after > before) {
+    const lv = levelOf(bond.affinity);
+    setTimeout(() => {
+      toast(`🎉 恭喜！你们的关系升级为「${lv.name}」`);
+      addMsg('pet', `（系统提示：你们的感情升级啦！现在是「${lv.name}」阶段 ${'💗'.repeat(Math.min(3, after))}）`, false);
+    }, 600);
+  }
+  /* 首次跨过解锁线：弹出私信解锁提示 */
+  if (!beforeUnlock && bond.affinity >= CHAT_UNLOCK) {
+    setTimeout(() => {
+      store.unlockChat(pet.id);
+      toast(`💌 亲密度达标！${pet.name}主人的私信解锁了`);
+      updateNavBadge();
+      renderStage();
+    }, 1400);
+  }
+}
+
+function send(text) {
+  if (busy) return;
+  const inp = document.getElementById('inp');
+  const t = (text !== undefined ? text : inp.value).trim();
+  if (!t) return;
+  if (text === undefined) inp.value = '';
+  addMsg('me', t);
+  busy = true;
+  bond.totalChat++;
+  const r = petReply(pet, bond, t, profile);
+  profile = r.profile;
+  store.saveProfile(profile);
+  setTimeout(() => {
+    petSpeak(r.parts, () => {
+      busy = false;
+      gainAffinity(r.affinityGain, r.moodDelta, r.memory);
+    });
+  }, 250);
+}
+
+function doAction(action) {
+  if (busy) return;
+  busy = true;
+  const r = petAction(pet, bond, action);
+  addMsg('me', action === 'night' ? '晚安，明天见 🌙' : { feed: '给你好吃的～', play: '陪你玩一会儿！', touch: 'rua～' }[action]);
+  setTimeout(() => {
+    petSpeak([r.text], () => {
+      busy = false;
+      gainAffinity(r.gain, 0, r.memory);
+    });
+  }, 200);
+}
+
+function prefill(t) { document.getElementById('inp').value = t; document.getElementById('inp').focus(); }
+
+function renderQuick() {
+  const qs = pet.memorial
+    ? ['我好想你', '你还记得窗台吗', '最近我很好', '晚安，煤球']
+    : ['你好呀', '今天好累', '我回来了', '你在干嘛呢', '晚安'];
+  document.getElementById('quick').innerHTML = qs.map(q => `<button onclick="send('${q}')">${q}</button>`).join('');
+}
+
+function renderMemories() {
+  const g = document.getElementById('memgrid');
+  if (!bond.memories.length) {
+    g.innerHTML = `<div class="mem-empty">还没有记忆碎片 —— 多和 ${pet.name} 聊聊天，或者介绍一下你自己吧 🐾</div>`;
+    return;
+  }
+  g.innerHTML = bond.memories.map(m =>
+    `<div class="mem-item"><span class="ic">💠</span><span>${esc(m.text)}<br><small style="color:var(--ink-faint)">${new Date(m.t).toLocaleDateString('zh-CN')}</small></span></div>`).join('');
+}
+
+/* ================= 初见流程 ================= */
+function maybeMeet() {
+  if (profile.name || bond.affinity > 0 || bond.totalChat > 0) return;
+  document.getElementById('m-ava').innerHTML = avatarHTML(pet, 96, 52);
+  document.getElementById('m-title').textContent = `你好，我是${pet.name}`;
+  document.getElementById('m-desc').textContent =
+    `一只${STYLES[pet.style].label}的${SPECIES[pet.species].label}。${pet.intro} 认识一下？`;
+  document.getElementById('modal').classList.add('open');
+}
+function meetDone() {
+  const v = document.getElementById('m-name').value.trim();
+  if (v) { profile.name = v; store.saveProfile(profile); }
+  document.getElementById('modal').classList.remove('open');
+  addMsg('pet', `嗨！我是${pet.name}${pet.catchphrase ? `，${pet.catchphrase}` : ''} 以后我的心情和饱食度都归你管啦，多来看看我哦。`);
+  if (profile.name) addMsg('me', `你好呀，我叫${profile.name}`);
+  if (profile.name) {
+    petSpeak([`以后我就叫你${profile.name}啦！这个名字，${pet.name}记住了。`, pick(REPLY.greeting[pet.style])], () => {
+      gainAffinity(8, 6, { t: Date.now(), text: `记住了——你叫「${profile.name}」` });
+    });
+  }
+}
+
+/* ================= 启动 ================= */
+renderStage();
+renderHead();
+renderQuick();
+renderMemories();
+if (!bond.metToday) { /* 让第一次进入也能触发每日问候 */ }
+maybeMeet();
+scrollBottom();
+document.getElementById('inp').focus();
+
+/* ================= 实用功能 ================= */
+
+/* 生成今日陪伴证明 */
+function saveProof() {
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const todayMemories = bond.memories.filter(m => {
+    const mDate = new Date(m.t);
+    return mDate.getDate() === now.getDate() && mDate.getMonth() === now.getMonth() && mDate.getFullYear() === now.getFullYear();
+  });
+  const proof = {
+    petId: pet.id,
+    petName: pet.name,
+    date: dateStr,
+    companion: (store.getProfile().name || '你'),
+    duration: `${Math.floor((Date.now() - bond.lastSeen) / 3600000)}小时`,
+    memories: todayMemories,
+    level: levelOf(bond.affinity).name,
+    friendship: bond.affinity
+  };
+  
+  const proofData = JSON.stringify(proof, null, 2);
+  const blob = new Blob([proofData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `陪伴证明_${pet.name}_${dateStr}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  toast(`📷 今日陪伴记录已保存为文件！`);
+  store.setProof(proof);
+}
+
+/* 紧急模式开关 */
+function toggleEmergencyMode() {
+  const isOn = store.getEmergencyMode(pet.id);
+  if (isOn) {
+    if (confirm('关闭紧急模式？将停止向陪伴者发送提醒')) {
+      store.setEmergencyMode(pet.id, false);
+      toast('🚨 紧急模式已关闭');
+      document.querySelector('.btn[onclick="toggleEmergencyMode()"]').textContent = '🚨 紧急模式';
+    }
+  } else {
+    if (confirm('开启紧急模式？将立即通知所有陪伴者"主人不在，需要特别关注"')) {
+      store.setEmergencyMode(pet.id, true);
+      toast('🚨 紧急模式已开启，陪伴者会收到特别提醒');
+      document.querySelector('.btn[onclick="toggleEmergencyMode()"]').textContent = '🚨 紧急模式：开启中';
+      // 这里可以添加通知所有陪伴者的逻辑
+    }
+  }
+}
+
+/* 生成AI表情包 */
+function generateEmoji() {
+  const emotions = ['happy', 'excited', 'sleepy', 'curious', 'playful'];
+  const emojiSets = {
+    happy: ['😊', '😄', '🥰', '😆', '🤗'],
+    excited: ['🤩', '😃', '🎉', '⚡', '🌟'],
+    sleepy: ['😴', '🥱', '💤', '😌', '🌙'],
+    curious: ['🤔', '🧐', '😮', '👀', '❓'],
+    playful: ['😜', '🤪', '🎾', '🐾', '🎈']
+  };
+  
+  const emotion = emotions[Math.floor(Math.random() * emotions.length)];
+  const emojis = emojiSets[emotion];
+  const selectedEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+  
+  const messages = {
+    happy: [`今天${pet.name}特别开心！`, `${pet.name}对你很满意~`, `${pet.name}的笑容好治愈！`],
+    excited: [`${pet.name}今天活力满满！`, `${pet.name}超兴奋的状态！`, `${pet.name}等不及要和你玩了！`],
+    sleepy: [`${pet.name}现在有点困了`, `${pet.name}需要小憩一下`, `${pet.name}打哈欠的样子好可爱`],
+    curious: [`${pet.name}对你很好奇`, `${pet.name}在思考什么`, `${pet.name}的眼睛盯着你看`],
+    playful: [`${pet.name}想和你玩耍！`, `${pet.name}调皮的样子好可爱`, `${pet.name}求陪玩模式开启！`]
+  };
+  
+  const message = messages[emotion][Math.floor(Math.random() * messages[emotion].length)];
+  
+  // 创建表情包图片
+  const canvas = document.createElement('canvas');
+  canvas.width = 300;
+  canvas.height = 300;
+  const ctx = canvas.getContext('2d');
+  
+  // 背景
+  ctx.fillStyle = '#FFF9F2';
+  ctx.fillRect(0, 0, 300, 300);
+  
+  // 装饰边框
+  ctx.strokeStyle = '#FFA726';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(10, 10, 280, 280);
+  
+  // 表情
+  ctx.font = '120px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(selectedEmoji, 150, 150);
+  
+  // 文字
+  ctx.fillStyle = '#333';
+  ctx.font = '20px Arial';
+  ctx.fillText(message, 150, 240);
+  
+  // 下载
+  const link = document.createElement('a');
+  link.download = `${pet.name}_表情包_${new Date().getTime()}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+  
+  toast(`✨ 已生成${selectedEmoji}表情包！`);
+  store.addEmojiHistory(pet.id, { emoji: selectedEmoji, message, time: Date.now() });
+}
+
+/* 纪念日提醒 */
+function checkMemorials() {
+  const now = new Date();
+  const today = `${now.getMonth() + 1}-${now.getDate()}`;
+  const memorials = [];
+  
+  // 生日提醒
+  if (pet.birthday && pet.birthday === today) {
+    memorials.push({
+      type: 'birthday',
+      title: `${pet.name}的生日`,
+      message: `今天是小可爱的${pet.age || 1}岁生日！🎂 快祝它生日快乐吧！`,
+      emoji: '🎉'
+    });
+  }
+  
+  // 领养纪念日
+  if (pet.adoptDate && pet.adoptDate === today) {
+    memorials.push({
+      type: 'adopt',
+      title: `${pet.name}的到家纪念日`,
+      message: `今天是${pet.name}来到你家的第${Math.floor((now - new Date(pet.adoptDate)) / (365 * 24 * 60 * 60 * 1000))}天！🏠 感谢相遇`,
+      emoji: '🐾'
+    });
+  }
+  
+  // 恋爱纪念日（如果有）
+  if (pet.loveDate && pet.loveDate === today) {
+    memorials.push({
+      type: 'love',
+      title: '恋爱纪念日',
+      message: `你和${pet.name}成为好朋友已经${Math.floor((now - new Date(pet.loveDate)) / (365 * 24 * 60 * 60 * 1000))}年了！💕`,
+      emoji: '💗'
+    });
+  }
+  
+  // 显示纪念日提醒
+  memorials.forEach(memorial => {
+    setTimeout(() => {
+      const memorialMsg = document.createElement('div');
+      memorialMsg.className = 'memorial-notification';
+      memorialMsg.innerHTML = `
+        <div class="memorial-icon">${memorial.emoji}</div>
+    <div class="memorial-content">
+      <div class="memorial-title">${memorial.title}</div>
+      <div class="memorial-message">${memorial.message}</div>
+    </div>
+  `;
+  document.body.appendChild(memorialMsg);
+  
+  setTimeout(() => memorialMsg.remove(), 5000);
+  }, 1000);
+  });
+  
+  return memorials;
+}
+
+// 页面加载时检查纪念日和设置性格主题
+window.addEventListener('load', () => {
+  checkMemorials();
+  applyPersonalityTheme();
+});
+
+/* 应用性格主题 */
+function applyPersonalityTheme() {
+  const personality = store.getPetPersonality(pet.id);
+  const themes = {
+    energetic: {
+      primary: '#FF6B6B',
+      secondary: '#FFE5E5',
+      bg: 'linear-gradient(135deg, #FFF5F5, #FFE5E5)',
+      message: {
+        happy: '今天超开心！活力满满！⚡',
+        hungry: '肚子饿了！要吃东西啦！🍖',
+        playful: '快来和我玩吧！🎾'
+      }
+    },
+    calm: {
+      primary: '#4CAF50',
+      secondary: '#E8F5E9',
+      bg: 'linear-gradient(135deg, #F1F8E9, #E8F5E9)',
+      message: {
+        happy: '今天心情不错~ 很平静 😊',
+        hungry: '我想吃东西了... 🍜',
+        sleepy: '有点困了，想休息一下 😴'
+      }
+    },
+    playful: {
+      primary: '#FF9800',
+      secondary: '#FFF3E0',
+      bg: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)',
+      message: {
+        happy: '嘻嘻！今天要捣蛋！🤪',
+        hungry: '我要偷吃啦！别发现我！🍖',
+        playful: '快和我玩捉迷藏！🎯'
+      }
+    },
+    shy: {
+      primary: '#2196F3',
+      secondary: '#E3F2FD',
+      bg: 'linear-gradient(135deg, #E1F5FE, #E3F2FD)',
+      message: {
+        happy: '今天也...很开心 🌸',
+        hungry: '那个...我饿了... 🤫',
+        sleepy: '想自己安静待一会... 🕊️'
+      }
+    },
+    smart: {
+      primary: '#9C27B0',
+      secondary: '#F3E5F5',
+      bg: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)',
+      message: {
+        happy: '今天学到了新东西！🧠',
+        hungry: '根据我的计算，现在是吃饭时间 🍽️',
+        playful: '来玩益智游戏怎么样？🧩'
+      }
+    },
+    lazy: {
+      primary: '#795548',
+      secondary: '#EFEBE9',
+      bg: 'linear-gradient(135deg, #EFEBE9, #D7CCC8)',
+      message: {
+        happy: '今天...也还不错... 😴',
+        hungry: '要...吃...东西... 🍖',
+        sleepy: '再让我睡一会... ⏰'
+      }
+    }
+  };
+  
+  const theme = themes[personality] || themes.energetic;
+  
+  // 应用主题颜色
+  document.documentElement.style.setProperty('--primary-soft', theme.secondary);
+  document.documentElement.style.setProperty('--primary-deep', theme.primary);
+  document.documentElement.style.setProperty('--bg-gradient', theme.bg);
+  
+  // 更新宠物状态显示
+  updateStatusWithTheme(theme);
+}
+
+function updateStatusWithTheme(theme) {
+  const statusElement = document.querySelector('.pet-status');
+  if (statusElement) {
+    statusElement.style.background = theme.secondary;
+    statusElement.style.color = theme.primary;
+  }
+}
+
+/* AI情绪识别 */
+function analyzeMood() {
+  const currentHour = new Date().getHours();
+  const bond = store.getPetBond(pet.id);
+  const moodPatterns = {
+    happy: {
+      triggers: ['早上8-10点', '下午4-6点', '互动后', '吃饭时'],
+      behaviors: ['蹭你', '摇尾巴', '发出咕噜声', '开心跳跃'],
+      messages: ['今天很幸福！🥰', '和你在一起真开心！😊', '生活好美好！🌟']
+    },
+    sad: {
+      triggers: ['主人长时间不在', '被忽视', '身体不适'],
+      behaviors: ['蔫蔫的', '躲起来', '不想互动', '叹气'],
+      messages: ['有点想你... 🥺', '今天有点不开心 😢', '需要抱抱... 🤗']
+    },
+    anxious: {
+      triggers: ['新环境', '突然声响', '陌生人'],
+      behaviors: ['紧张徘徊', '耳朵竖直', '尾巴夹紧', '躲藏'],
+      messages: ['有点紧张... 😰', '这里好陌生 🤔', '需要安全感... 🛡️']
+    },
+    excited: {
+      triggers: ['玩耍时间', '外出', '好吃的'],
+      behaviors: ['快速摇尾', '蹦跳', '叫唤', '转圈'],
+      messages: ['太开心啦！⚡', '今天要好好玩！🎉', '充满活力！🔥']
+    },
+    sleepy: {
+      triggers: ['饭后', '晚上9-11点', '长时间休息'],
+      behaviors: ['打哈欠', '找地方睡', '眼睛半闭', '放缓动作'],
+      messages: ['好困啊... 😴', '想睡觉了~ 💤', '需要休息... 🛌']
+    },
+    hungry: {
+      triggers: ['饭点', '闻到食物', '长时间没吃'],
+      behaviors: ['围着转', '叫唤', '盯着食物', '撒娇'],
+      messages: ['好饿啊 🍖', '要吃饭了！🍜', '我肚子空了~ 😋']
+    }
+  };
+  
+  // 根据时间和互动分析情绪
+  let likelyMoods = [];
+  
+  // 时间影响
+  if (currentHour >= 22 || currentHour <= 6) {
+    likelyMoods.push('sleepy');
+  } else if (currentHour >= 8 && currentHour <= 10) {
+    likelyMoods.push('excited');
+  }
+  
+  // 互动频率影响
+  const recentInteractions = bond.memories.filter(m => Date.now() - m.t < 3600000);
+  if (recentInteractions.length < 1) {
+    likelyMoods.push('sad');
+  } else if (recentInteractions.length > 3) {
+    likelyMoods.push('happy');
+  }
+  
+  // 性格影响
+  const personality = store.getPetPersonality(pet.id);
+  if (personality === 'lazy') likelyMoods.push('sleepy');
+  if (personality === 'energetic') likelyMoods.push('excited');
+  if (personality === 'shy') likelyMoods.push('anxious');
+  
+  // 随机选择最可能的情绪
+  const selectedMood = likelyMoods[Math.floor(Math.random() * likelyMoods.length)] || 'happy';
+  const moodData = moodPatterns[selectedMood];
+  
+  // 生成情绪报告
+  const report = {
+    mood: selectedMood,
+    confidence: Math.floor(Math.random() * 30) + 70, // 70-99%
+    triggers: pick(moodData.triggers),
+    behaviors: pick(moodData.behaviors),
+    message: pick(moodData.messages),
+    suggestions: generateMoodSuggestions(selectedMood)
+  };
+  
+  return report;
+}
+
+function generateMoodSuggestions(mood) {
+  const suggestions = {
+    happy: ['继续保持互动！', '可以再玩一会儿游戏', '拍个照记录开心时刻'],
+    sad: ['多抱抱它', '给点小零食安慰', '轻轻抚摸说说话'],
+    anxious: ['放慢动作，轻声安慰', '提供安全角落', '避免突然触碰'],
+    excited: ['带它出去活动', '提供玩具消耗精力', '保持规律作息'],
+    sleepy: ['营造安静环境', '准备舒适的睡窝', '避免过度打扰'],
+    hungry: ['按时喂食', '准备健康零食', '注意食量控制']
+  };
+  
+  return suggestions[mood] || ['多关注毛孩子的需求'];
+}
+
+/* 显示情绪报告 */
+function showMoodReport() {
+  const report = analyzeMood();
+  const moodIcons = {
+    happy: '😊',
+    sad: '😢',
+    anxious: '😰',
+    excited: '⚡',
+    sleepy: '😴',
+    hungry: '🍖'
+  };
+  
+  const reportHTML = `
+    <div class="mood-report">
+      <div class="mood-header">
+        <span class="mood-emoji">${moodIcons[report.mood]}</span>
+        <span class="mood-name">${getMoodName(report.mood)}</span>
+        <span class="mood-confidence">置信度 ${report.confidence}%</span>
+      </div>
+      <div class="mood-content">
+        <div class="mood-section">
+          <h4>可能原因：</h4>
+          <p>${report.triggers}</p>
+        </div>
+        <div class="mood-section">
+          <h4>表现行为：</h4>
+          <p>${report.behaviors}</p>
+        </div>
+        <div class="mood-section">
+          <h4>内心独白：</h4>
+          <p>"${report.message}"</p>
+        </div>
+        <div class="mood-section">
+          <h4>建议行动：</h4>
+          <ul>${report.suggestions.map(s => `<li>${s}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // 显示报告弹窗
+  const modal = document.createElement('div');
+  modal.className = 'mood-modal';
+  modal.innerHTML = reportHTML;
+  document.body.appendChild(modal);
+  
+  // 3秒后自动关闭
+  setTimeout(() => modal.remove(), 5000);
+}
+
+function getMoodName(mood) {
+  const names = {
+    happy: '开心',
+    sad: '难过',
+    anxious: '焦虑',
+    excited: '兴奋',
+    sleepy: '困倦',
+    hungry: '饥饿'
+  };
+  return names[mood] || '平静';
+}
+</script>
+</body>
+</html>
