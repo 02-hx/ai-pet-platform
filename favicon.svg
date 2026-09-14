@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">TaBan AI Pet Platform Icon</title>
+  <desc id="desc">A rounded app icon with a friendly pet paw and AI spark for TaBan.</desc>
+  <defs>
+    <linearGradient id="bg" x1="36" y1="28" x2="220" y2="230" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6F7DFF"/>
+      <stop offset="0.52" stop-color="#7A4BD8"/>
+      <stop offset="1" stop-color="#19BBA2"/>
+    </linearGradient>
+    <linearGradient id="paw" x1="79" y1="73" x2="176" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EAF7FF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#243150" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+  <circle cx="207" cy="52" r="8" fill="#FFE37A"/>
+  <path d="M207 29v11M207 64v11M184 52h11M219 52h11" stroke="#FFE37A" stroke-width="7" stroke-linecap="round"/>
+  <path d="M78 190c-17-12-26-29-24-49 2-31 28-57 63-61 43-5 80 22 86 61 3 21-5 39-22 50-19 12-38 5-54 5-17 0-31 7-49-6Z" fill="#243150" opacity="0.16"/>
+  <g filter="url(#shadow)">
+    <path d="M71 171c-10-20 8-44 31-36 15 5 20 19 26 19s11-14 26-19c23-8 41 16 31 36-9 17-31 23-57 23s-48-6-57-23Z" fill="url(#paw)"/>
+    <ellipse cx="79" cy="107" rx="22" ry="28" transform="rotate(-22 79 107)" fill="url(#paw)"/>
+    <ellipse cx="116" cy="87" rx="21" ry="29" transform="rotate(-8 116 87)" fill="url(#paw)"/>
+    <ellipse cx="154" cy="88" rx="21" ry="29" transform="rotate(10 154 88)" fill="url(#paw)"/>
+    <ellipse cx="190" cy="109" rx="22" ry="28" transform="rotate(23 190 109)" fill="url(#paw)"/>
+  </g>
+  <path d="M98 157c16-18 44-20 62-2" fill="none" stroke="#7A4BD8" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="112" cy="141" r="7" fill="#19BBA2"/>
+  <circle cx="151" cy="141" r="7" fill="#19BBA2"/>
+  <path d="M51 67c16-20 37-30 63-31" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" opacity="0.42"/>
+</svg>

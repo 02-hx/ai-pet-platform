@@ -1,0 +1,17 @@
+{
+  "name": "它伴 TaBan - AI宠物社交平台",
+  "short_name": "它伴",
+  "description": "AI驱动的宠物社交平台",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#6F7DFF",
+  "theme_color": "#7A4BD8",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
