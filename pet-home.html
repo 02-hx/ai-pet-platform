@@ -48,7 +48,7 @@
             gap: 1rem;
             justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
         
         .brand-btn {
@@ -84,6 +84,41 @@
         
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .quick-entry-title {
+            margin: 0 0 1rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            opacity: 0.95;
+        }
+
+        .quick-entry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-entry {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 48px;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .quick-entry:hover {
+            background: rgba(255, 255, 255, 0.26);
             transform: translateY(-2px);
         }
         
@@ -191,6 +226,21 @@
             <div class="brand-buttons">
                 <button class="brand-btn btn-primary" onclick="enterMainHome()">进入宠物家园</button>
                 <button class="brand-btn btn-secondary" onclick="enterCommunity()">探索社区</button>
+            </div>
+
+            <div class="quick-entry-title">功能入口</div>
+            <div class="quick-entry-grid" aria-label="功能入口">
+                <a class="quick-entry" href="companion.html">🤖 AI陪伴</a>
+                <a class="quick-entry" href="square.html">🌟 宠物广场</a>
+                <a class="quick-entry" href="create.html">🎨 创建分身</a>
+                <a class="quick-entry" href="health.html">🏥 健康档案</a>
+                <a class="quick-entry" href="knowledge.html">📚 知识库</a>
+                <a class="quick-entry" href="market.html">🛒 临时投喂</a>
+                <a class="quick-entry" href="match.html">💞 契合测试</a>
+                <a class="quick-entry" href="messages.html">💬 主人私信</a>
+                <a class="quick-entry" href="pet-recommendations.html">✨ 智能推荐</a>
+                <a class="quick-entry" href="points-system.html">🏆 积分体系</a>
+                <a class="quick-entry" href="badges.html">🎖 我的徽章</a>
             </div>
             
             <div class="features-preview">
