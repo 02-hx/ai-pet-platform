@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宠物广场 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .page-head { text-align: center; padding: 64px 0 34px; }
+  .page-head h1 { font-size: clamp(26px, 3.2vw, 36px); font-weight: 900; }
+  .page-head p { color: var(--ink-soft); margin-top: 10px; }
+
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 36px; }
+  .chip {
+    padding: 9px 22px; border-radius: 999px; border: 1.5px solid var(--line);
+    background: #fff; color: var(--ink-soft); font-size: 14px; font-weight: 700;
+    transition: all .18s;
+  }
+  .chip:hover { border-color: var(--primary-soft); color: var(--primary-deep); }
+  .chip.on { background: var(--grad-primary); color: #fff; border-color: transparent; box-shadow: 0 6px 14px rgba(240,116,60,.3); }
+  
+  /* UGC升级样式 */
+  .quick-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+  }
+  .btn-create, .btn-stream, .btn-events {
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: none;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all .18s;
+  }
+  .btn-create {
+      background: var(--grad-primary);
+      color: white;
+  }
+  .btn-stream {
+      background: #FF6B6B;
+      color: white;
+  }
+  .btn-events {
+      background: #4CAF50;
+      color: white;
+  }
+  .btn-create:hover, .btn-stream:hover, .btn-events:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+  
+  .hot-topics {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 36px;
+      box-shadow: 0 6px 18px rgba(240,116,60,.08);
+  }
+  .hot-topics h3 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: var(--primary-deep);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  }
+  .topics-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+  }
+  .topic-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-soft);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .18s;
+  }
+  .topic-item:hover {
+      background: var(--primary-soft);
+      transform: translateX(4px);
+  }
+  .topic-trend {
+      font-size: 12px;
+      font-weight: 800;
+      color: #FF6B6B;
+      min-width: 24px;
+      text-align: center;
+  }
+  .topic-name {
+      font-size: 14px;
+      font-weight: 700;
+      flex: 1;
+  }
+  .topic-count {
+      font-size: 12px;
+      color: var(--ink-faint);
+  }
+  
+  /* 直播和视频卡片样式 */
+  .pcard-video {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #000;
+      margin-bottom: 16px;
+      height: 200px;
+  }
+  .video-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.8;
+  }
+  .live-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: #FF0000;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(255,0,0,0); }
+      100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+  }
+  .video-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+      padding: 16px;
+      color: white;
+  }
+  .video-duration {
+      background: rgba(0,0,0,0.8);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      float: right;
+  }
+  .stream-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 12px;
+  }
+  .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+  }
+  
+  /* 评选活动样式 */
+  .contest-banner {
+      background: linear-gradient(135deg, #FFE5E5, #FFD4D4);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 36px;
+      position: relative;
+      overflow: hidden;
+  }
+  .contest-banner::before {
+      content: '🏆';
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      font-size: 120px;
+      opacity: 0.1;
+      transform: rotate(15deg);
+  }
+  .contest-header {
+      position: relative;
+      z-index: 1;
+  }
+  .contest-header h3 {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      color: #FF6B6B;
+  }
+  .contest-header p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+  }
+  .contest-timer {
+      background: rgba(255,255,255,0.9);
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+  }
+  .contest-actions {
+      display: flex;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+  }
+  .contest-btn {
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all .18s;
+  }
+  .contest-btn-primary {
+      background: #FF6B6B;
+      color: white;
+  }
+  .contest-btn-secondary {
+      background: white;
+      color: #FF6B6B;
+      border: 2px solid #FF6B6B;
+  }
+  .contest-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 22px; padding-bottom: 80px; }
+  .pcard { padding: 26px 24px 22px; display: flex; flex-direction: column; position: relative; }
+  .pcard .top { display: flex; gap: 16px; align-items: center; margin-bottom: 14px; }
+  .pcard h3 { font-size: 19px; font-weight: 900; }
+  .pcard .meta { font-size: 12.5px; color: var(--ink-faint); margin-top: 3px; }
+  .pcard .intro { font-size: 13.5px; color: var(--ink-soft); min-height: 66px; margin-bottom: 12px; }
+  .pcard .tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+  .pcard .owner { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 16px; }
+  .pcard .foot { margin-top: auto; display: flex; gap: 10px; }
+  .pcard .foot .btn { flex: 1; }
+  .ribbons { position: absolute; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .ribbon-mem {
+    background: linear-gradient(135deg, #CDBBF2, #9F86E0); color: #fff;
+    font-size: 11.5px; font-weight: 800; padding: 4px 12px; border-radius: 999px;
+  }
+  .bond-chip {
+    font-size: 11.5px; font-weight: 800; color: var(--green-deep);
+    background: #E4F5EC; padding: 4px 12px; border-radius: 999px;
+  }
+  .banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    background: linear-gradient(135deg, #FFF3E6, #FFE3C8);
+    border: 1.5px dashed #FFB37E; border-radius: 24px;
+    padding: 26px 32px; margin-bottom: 34px;
+  }
+  .banner h3 { font-size: 17px; }
+  .banner p { font-size: 13.5px; color: var(--ink-soft); margin-top: 4px; }
+  @media (max-width: 640px) { .banner { flex-direction: column; text-align: center; } }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap">
+    <div class="page-head">
+      <h1>🐾 宠物广场</h1>
+      <p>每一只分身背后，都是一个真实的毛孩子和它的主人。找到和你对味的那只吧。</p>
+    </div>
+
+    <div class="banner">
+      <div>
+        <h3>🏠 我也想把自家毛孩子分享出去</h3>
+        <p>上传习性描述，3 分钟生成 TA 的 AI 分身，还能收获互动收益与代养信任档案。</p>
+      </div>
+      <a class="btn" href="create.html">＋ 创建宠物分身</a>
+    </div>
+
+  <!-- 评选活动横幅 -->
+  <div class="contest-banner">
+    <div class="contest-header">
+      <h3>萌宠才艺大赛</h3>
+      <p>展示你家毛孩子的才艺，赢取丰厚奖品！</p>
+      <div class="contest-timer">
+        <span>⏰ 距离报名截止</span>
+        <span id="contest-countdown">3天12小时</span>
+      </div>
+      <div class="contest-actions">
+        <button class="contest-btn contest-btn-primary" onclick="joinContest()">立即报名</button>
+        <button class="contest-btn contest-btn-secondary" onclick="viewContest()">查看详情</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 快速操作 -->
+  <div class="quick-actions">
+    <button class="btn-create" onclick="window.location.href='create.html'">📸 发布内容</button>
+    <button class="btn-stream" onclick="startLive()">🎥 开始直播</button>
+    <button class="btn-events" onclick="showEvents()">📅 社区活动</button>
+  </div>
+
+  <!-- 热门话题 -->
+  <div class="hot-topics">
+    <h3>🔥 热门话题</h3>
+    <div class="topics-list">
+      <div class="topic-item" onclick="searchTopic('萌宠日常')">
+        <span class="topic-trend">#1</span>
+        <span class="topic-name">萌宠日常</span>
+        <span class="topic-count">2.3k 讨论</span>
+      </div>
+      <div class="topic-item" onclick="searchTopic('宠物训练')">
+        <span class="topic-trend">#2</span>
+        <span class="topic-name">宠物训练</span>
+        <span class="topic-count">1.8k 讨论</span>
+      </div>
+      <div class="topic-item" onclick="searchTopic('宠物健康')">
+        <span class="topic-trend">#3</span>
+        <span class="topic-name">宠物健康</span>
+        <span class="topic-count">1.5k 讨论</span>
+      </div>
+    </div>
+  </div>
+
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-square');
+
+const FILTERS = [
+  ['all', '全部'], ['photo', '📸 图片'], ['video', '🎬 视频'], ['live', '🔴 直播'],
+  ['article', '📝 文章'], ['contest', '🏆 活动'], ['nearby', '📍 附近'], ['follow', '👥 关注'],
+];
+let curFilter = 'all';
+
+// UGC功能函数
+function startLive() {
+  toast('🎥 直播功能正在开发中，敬请期待！');
+  // 这里可以添加实际的直播启动逻辑
+}
+
+function showEvents() {
+  toast('📅 社区活动功能正在开发中，敬请期待！');
+  // 这里可以添加活动页面跳转逻辑
+}
+
+function searchTopic(topicName) {
+  toast(`🔍 正在搜索 #${topicName} 相关内容`);
+  // 这里可以添加话题搜索逻辑
+}
+
+function joinContest() {
+  toast('🏆 报名功能正在开发中，敬请期待！');
+  // 这里可以添加报名表单逻辑
+}
+
+function viewContest() {
+  toast('🏆 活动详情页面正在开发中，敬请期待！');
+  // 这里可以添加活动详情页面跳转逻辑
+}
+
+function filterContent(type) {
+  curFilter = type;
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.classList.toggle('on', chip.dataset.k === type);
+  });
+  render();
+  toast(`🔍 切换到${type === 'all' ? '全部' : FILTERS.find(f => f[0] === type)?.[1] || type}内容`);
+}
+
+// 更新比赛倒计时
+function updateContestCountdown() {
+  const countdownElement = document.getElementById('contest-countdown');
+  if (countdownElement) {
+    // 模拟倒计时逻辑
+    const now = new Date();
+    const contestEnd = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000);
+    const diff = contestEnd - now;
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    countdownElement.textContent = `${days}天${hours}小时`;
+  }
+}
+
+// 每秒更新倒计时
+setInterval(updateContestCountdown, 1000);
+updateContestCountdown();
+
+// 内容渲染函数
+function matchScoreOf(petId) {
+  const pf = store.getProfile();
+  if (!pf.quiz || !pf.quiz.results) return null;
+  const hit = pf.quiz.results.find(r => r.petId === petId);
+  return hit ? hit.score : null;
+}
+
+function render() {
+  const bonds = store.getBonds();
+  const pets = store.getPets().filter(p => {
+    if (curFilter === 'all') return true;
+    if (curFilter === 'mine') return p.userCreated;
+    if (curFilter === 'memorial') return p.memorial;
+    return p.species === curFilter;
+  });
+  document.getElementById('grid').innerHTML = pets.map(p => {
+    const bond = bonds[p.id];
+    const lv = bond ? levelOf(bond.affinity) : null;
+    const ms = matchScoreOf(p.id);
+    return `
+    <div class="card pcard">
+      <div class="ribbons">
+        ${p.memorial ? '<span class="ribbon-mem">🌈 数字纪念馆</span>' : ''}
+        ${ms !== null ? `<span class="badge-match">🎯 契合 ${ms}%</span>` : ''}
+        ${bond ? `<span class="bond-chip">Lv.${lv.idx + 1} ${lv.name} · ${bond.affinity}亲密度</span>` : ''}
+      </div>
+      <div class="top">
+        ${avatarHTML(p, 74, 40)}
+        <div>
+          <h3>${p.name}</h3>
+          <div class="meta">${SPECIES[p.species].label} · ${p.breed} · ${p.gender} · ${p.age}</div>
+          <div class="meta">📍 ${p.city}</div>
+        </div>
+      </div>
+      <div class="tags">${traitTags(p).map(t => `<span class="tag ${t.c}">${t.t}</span>`).join('')}</div>
+      <div class="intro">${p.intro}</div>
+      <div class="owner">主人：${p.owner}</div>
+      <div class="foot">
+        <button class="btn small" onclick="goCompanion('${p.id}')">💬 开始互动</button>
+        <button class="btn small ghost" onclick="toast('${p.story.replace(/'/g, '')}')">📖 它的故事</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('filters').innerHTML = FILTERS.map(([k, t]) =>
+  `<button class="chip ${k === 'all' ? 'on' : ''}" data-k="${k}">${t}</button>`).join('');
+document.getElementById('filters').addEventListener('click', e => {
+  const b = e.target.closest('.chip');
+  if (!b) return;
+  curFilter = b.dataset.k;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === b));
+  render();
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物家园 - 它伴 TaBan</title>
+    <meta name="description" content="它伴 TaBan - AI驱动的宠物社交平台">
+    <link rel="stylesheet" href="css/taban-framework.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .brand-landing {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .brand-container {
+            text-align: center;
+            color: white;
+            padding: 2rem;
+            max-width: 800px;
+        }
+        
+        .brand-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .brand-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .brand-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .brand-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+        
+        .brand-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .features-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: left;
+        }
+        
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+        
+        .status-good {
+            background: rgba(76, 175, 80, 0.8);
+        }
+        
+        .status-warning {
+            background: rgba(255, 152, 0, 0.8);
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.8);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @media (max-width: 768px) {
+            .brand-title {
+                font-size: 2rem;
+            }
+            
+            .brand-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .brand-logo {
+                font-size: 3rem;
+            }
+            
+            .brand-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features-preview {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 状态指示器 -->
+    <div id="status-indicator" class="status-indicator">
+        🟢 系统正常运行
+    </div>
+
+    <div class="brand-landing">
+        <div class="brand-container">
+            <div class="brand-logo">🐾</div>
+            <h1 class="brand-title">它伴 TaBan</h1>
+            <p class="brand-subtitle">AI驱动的宠物社交平台，让每一个宠物都得到最好的陪伴</p>
+            
+            <div class="brand-buttons">
+                <button class="brand-btn btn-primary" onclick="enterMainHome()">进入宠物家园</button>
+                <button class="brand-btn btn-secondary" onclick="enterCommunity()">探索社区</button>
+            </div>
+            
+            <div class="features-preview">
+                <div class="feature-item">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI智能推荐</div>
+                    <div class="feature-desc">基于机器学习的个性化推荐系统</div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🏥</div>
+                    <div class="feature-title">健康管理</div>
+                    <div class="feature-desc">智能健康监测与预警系统</div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">性格定制</div>
+                    <div class="feature-desc">创建独特的AI宠物分身</div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🌟</div>
+                    <div class="feature-title">社区互动</div>
+                    <div class="feature-desc">丰富的UGC内容平台</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 稳定性优化脚本 -->
+    <script src="js/stability-optimizer.js"></script>
+    
+    <script>
+        // 页面加载动画
+        window.addEventListener('load', () => {
+            const container = document.querySelector('.brand-container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                container.style.transition = 'all 1s ease';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+        // 进入主页面
+        function enterMainHome() {
+            console.log('进入宠物家园...');
+            window.location.href = 'square.html';
+        }
+
+        // 进入社区
+        function enterCommunity() {
+            console.log('进入社区...');
+            window.location.href = 'square.html';
+        }
+
+        // 更新状态指示器
+        function updateStatusIndicator(status, message) {
+            const indicator = document.getElementById('status-indicator');
+            indicator.className = `status-indicator status-${status}`;
+            indicator.innerHTML = `${message} 🟢`;
+        }
+
+        // 监控系统状态
+        setInterval(() => {
+            const memUsage = performance.memory ? 
+                (performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit * 100).toFixed(1) : 0;
+            
+            if (memUsage > 80) {
+                updateStatusIndicator('warning', `内存使用较高: ${memUsage}%`);
+            } else if (memUsage > 95) {
+                updateStatusIndicator('error', `内存使用过高: ${memUsage}%`);
+            } else {
+                updateStatusIndicator('good', '系统正常运行');
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

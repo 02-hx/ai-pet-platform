@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宠物性格定制 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); min-height: 100vh; }
+  .personality { max-width: 1000px; margin: 0 auto; padding: 40px 0 90px; }
+  .personality h1 { text-align: center; font-size: 28px; margin-bottom: 10px; }
+  .personality p { text-align: center; color: var(--ink-faint); font-size: 15px; margin-bottom: 36px; }
+  
+  .pet-selector {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .pet-select {
+      padding: 12px 24px;
+      border-radius: 999px;
+      background: #fff;
+      border: 2px solid var(--line);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .18s;
+  }
+  .pet-select.on {
+      background: var(--grad-primary);
+      color: white;
+      border-color: transparent;
+  }
+  
+  .personality-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  .personality-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(240,116,60,.08);
+    cursor: pointer;
+    transition: transform .18s;
+  }
+  .personality-card:hover {
+    transform: translateY(-3px);
+  }
+  .personality-card.active {
+    border: 3px solid var(--primary);
+  }
+  .personality-header {
+    padding: 24px;
+      background: linear-gradient(135deg, #FFEAD9, #FFD4A3);
+      text-align: center;
+      position: relative;
+  }
+  .personality-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+  }
+  .personality-name {
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 8px;
+  }
+  .personality-desc {
+      font-size: 14px;
+      color: #8B5A2B;
+  }
+  
+  .personality-body {
+    padding: 24px;
+  }
+  .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+  }
+  .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--ink-soft);
+  }
+  .feature-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-soft);
+      border-radius: 50%;
+      font-size: 12px;
+  }
+  
+  .theme-preview {
+    background: #fff;
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 6px 18px rgba(240,116,60,.08);
+  }
+  .theme-preview h3 {
+    text-align: center;
+      font-size: 20px;
+      margin-bottom: 20px;
+  }
+  .theme-showcase {
+    display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+  }
+  .theme-item {
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 800;
+  }
+  
+  /* 性格主题样式 */
+  .theme-energetic {
+      background: linear-gradient(135deg, #FFE5E5, #FFD4D4);
+      color: #FF6B6B;
+  }
+  .theme-energetic .theme-item {
+      background: #FFE5E5;
+  }
+  
+  .theme-calm {
+      background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+      color: #4CAF50;
+  }
+  .theme-calm .theme-item {
+      background: #E8F5E9;
+  }
+  
+  .theme-playful {
+      background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+      color: #FF9800;
+  }
+  .theme-playful .theme-item {
+      background: #FFF3E0;
+  }
+  
+  .theme-shy {
+      background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+      color: #2196F3;
+  }
+  .theme-shy .theme-item {
+      background: #E3F2FD;
+  }
+  
+  .theme-smart {
+      background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+      color: #9C27B0;
+  }
+  .theme-smart .theme-item {
+      background: #F3E5F5;
+  }
+  
+  .theme-lazy {
+      background: linear-gradient(135deg, #EFEBE9, #D7CCC8);
+      color: #795548;
+  }
+  .theme-lazy .theme-item {
+      background: #EFEBE9;
+  }
+  
+  .save-btn {
+      display: block;
+      margin: 0 auto 40px;
+      padding: 16px 40px;
+      background: var(--grad-primary);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .18s;
+  }
+  .save-btn:hover {
+      transform: scale(1.05);
+  }
+  
+  @media (max-width: 768px) {
+      .pet-selector { flex-direction: column; align-items: center; }
+      .personality-types { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap personality" id="app">
+    <h1>🎨 宠物性格定制</h1>
+    <p>为你的毛孩子选择专属性格主题，打造独特互动体验</p>
+    
+    <!-- 宠物选择器 -->
+    <div class="pet-selector">
+      <button class="pet-select on">🐱 橘猫 小橘</button>
+      <button class="pet-select">🐟 热带鱼 小金</button>
+      <button class="pet-select">🐦 文鸟 小彩</button>
+    </div>
+    
+    <!-- 性格类型选择 -->
+    <div class="personality-types">
+      <!-- 活泼型 -->
+      <div class="personality-card" onclick="selectPersonality('energetic')">
+        <div class="personality-header">
+          <div class="personality-icon">⚡</div>
+          <div class="personality-name">活泼型</div>
+          <div class="personality-desc">精力充沛，喜欢玩耍</div>
+        </div>
+        <div class="personality-body">
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">🏃</span> 运动量：每天需要大量运动
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎾</span> 喜欢互动游戏和玩具
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🗣️</span> 经常主动求关注
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎉</span> 情绪表达丰富
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 安静型 -->
+      <div class="personality-card" onclick="selectPersonality('calm')">
+        <div class="personality-header">
+          <div class="personality-icon">🧘</div>
+          <div class="personality-name">安静型</div>
+          <div class="personality-desc">温顺平和，喜欢独处</div>
+        </div>
+        <div class="personality-body">
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">😴</span> 喜欢睡觉和安静环境
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📚</span> 更喜欢观察而不是参与
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🕊️</span> 对声音敏感，容易受惊
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">💭</span> 内向思考型
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 顽皮型 -->
+      <div class="personality-card" onclick="selectPersonality('playful')">
+        <div class="personality-header">
+          <div class="personality-icon">🎭</div>
+          <div class="personality-name">顽皮型</div>
+          <div class="personality-desc">淘气捣蛋，喜欢恶作剧</div>
+        </div>
+        <div class="personality-body">
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">🤪</span> 经常做出让人惊讶的行为
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🚪</span> 喜欢偷偷探索新地方
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎨</span> 破坏力较强，需要专门玩具
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">😜</span> 调皮捣蛋但不伤人
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 害羞型 -->
+      <div class="personality-card" onclick="selectPersonality('shy')">
+        <div class="personality-header">
+          <div class="personality-icon">🌸</div>
+          <div class="personality-name">害羞型</div>
+          <div class="personality-desc">胆小敏感，需要安全感</div>
+        </div>
+        <div class="personality-body">
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">🙈</span> 新环境需要适应期
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🤫</span> 不太喜欢被关注
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🏠</span> 有自己的安全角落
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">💖</span> 一旦信任会很粘人
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 聪明型 -->
+      <div class="personality-card" onclick="selectPersonality('smart')">
+        <div class="personality-header">
+          <div class="personality-icon">🧠</div>
+          <div class="personality-name">聪明型</div>
+          <div class="personality-desc">智商高，学习能力强</div>
+        </div>
+        <div class="personality-body">
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">🎯</span> 能快速学会新技能
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">💡</span> 能理解复杂指令
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🤔</span> 经常表现出思考状态
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎓</span> 需要更多智力刺激
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 懒散型 -->
+      <div class="personality-card" onclick="selectPersonality('lazy')">
+        <div class="personality-header">
+          <div class="personality-icon">🛋️</div>
+          <div class="personality-name">懒散型</div>
+          <div class="personality-desc">嗜睡贪吃，佛系生活</div>
+        </div>
+        <div class="personality-body">
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">😴</span> 一天睡16小时+
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🍖</span> 对食物特别执着
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">⏰</span> 行动缓慢，反应迟钝
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🧘</span> 无欲无求，佛系性格
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 主题预览 -->
+    <div class="theme-preview" id="theme-preview">
+      <h3>🎨 主题预览：活跃型</h3>
+      <div class="theme-showcase theme-energetic">
+        <div class="theme-item">互动按钮</div>
+        <div class="theme-item">状态显示</div>
+        <div class="theme-item">消息气泡</div>
+        <div class="theme-item">背景渐变</div>
+      </div>
+    </div>
+    
+    <!-- 保存按钮 -->
+    <button class="save-btn" onclick="savePersonality()">保存性格定制</button>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-personality');
+
+let selectedPersonality = 'energetic';
+
+const themes = {
+  energetic: {
+    name: '活跃型',
+    colors: ['#FFE5E5', '#FFD4D4', '#FF6B6B'],
+    bg: 'linear-gradient(135deg, #FFE5E5, #FFD4D4)',
+    message: {
+      happy: '今天超开心！活力满满！⚡',
+      hungry: '肚子饿了！要吃东西啦！🍖',
+      playful: '快来和我玩吧！🎾'
+    }
+  },
+  calm: {
+    name: '安静型',
+    colors: ['#E8F5E9', '#C8E6C9', '#4CAF50'],
+    bg: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)',
+    message: {
+      happy: '今天心情不错~ 很平静 😊',
+      hungry: '我想吃东西了... 🍜',
+      sleepy: '有点困了，想休息一下 😴'
+    }
+  },
+  playful: {
+    name: '顽皮型',
+    colors: ['#FFF3E0', '#FFE0B2', '#FF9800'],
+    bg: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)',
+    message: {
+      happy: '嘻嘻！今天要捣蛋！🤪',
+      hungry: '我要偷吃啦！别发现我！🍖',
+      playful: '快和我玩捉迷藏！🎯'
+    }
+  },
+  shy: {
+    name: '害羞型',
+    colors: ['#E3F2FD', '#BBDEFB', '#2196F3'],
+    bg: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)',
+    message: {
+      happy: '今天也...很开心 🌸',
+      hungry: '那个...我饿了... 🤫',
+      sleepy: '想自己安静待一会... 🕊️'
+    }
+  },
+  smart: {
+    name: '聪明型',
+    colors: ['#F3E5F5', '#E1BEE7', '#9C27B0'],
+    bg: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)',
+    message: {
+      happy: '今天学到了新东西！🧠',
+      hungry: '根据我的计算，现在是吃饭时间 🍽️',
+      playful: '来玩益智游戏怎么样？🧩'
+    }
+  },
+  lazy: {
+    name: '懒散型',
+    colors: ['#EFEBE9', '#D7CCC8', '#795548'],
+    bg: 'linear-gradient(135deg, #EFEBE9, #D7CCC8)',
+    message: {
+      happy: '今天...也还不错... 😴',
+      hungry: '要...吃...东西... 🍖',
+      sleepy: '再让我睡一会... ⏰'
+    }
+  }
+};
+
+function selectPersonality(type) {
+  selectedPersonality = type;
+  
+  // 更新选中状态
+  document.querySelectorAll('.personality-card').forEach(card => {
+    card.classList.remove('active');
+  });
+  event.currentTarget.classList.add('active');
+  
+  // 更新主题预览
+  updateThemePreview(type);
+}
+
+function updateThemePreview(type) {
+  const preview = document.getElementById('theme-preview');
+  const theme = themes[type];
+  
+  preview.innerHTML = `
+    <h3>🎨 主题预览：${theme.name}</h3>
+    <div class="theme-showcase theme-${type}">
+      <div class="theme-item" style="background: ${theme.colors[0]}; color: ${theme.colors[2]};">互动按钮</div>
+      <div class="theme-item" style="background: ${theme.colors[1]}; color: ${theme.colors[2]};">状态显示</div>
+      <div class="theme-item" style="background: ${theme.colors[0]}; color: ${theme.colors[2]};">消息气泡</div>
+      <div class="theme-item" style="background: ${theme.colors[1]}; color: ${theme.colors[2]};">背景渐变</div>
+    </div>
+    <div style="margin-top: 20px; padding: 16px; background: ${theme.bg}; border-radius: 12px;">
+      <p style="margin: 0; font-size: 14px; color: ${theme.colors[2]};">
+        示例对话：${theme.message.happy}
+      </p>
+    </div>
+  `;
+}
+
+function savePersonality() {
+  const petId = 'pet1'; // 当前选中的宠物
+  store.setPetPersonality(petId, selectedPersonality);
+  
+  toast(`✨ 已保存${themes[selectedPersonality].name}主题！`);
+}
+
+// 页面加载时读取已设置的性格
+window.addEventListener('load', () => {
+  const currentPersonality = store.getPetPersonality('pet1');
+  if (currentPersonality) {
+    selectedPersonality = currentPersonality;
+    document.querySelector(`[onclick="selectPersonality('${currentPersonality}')"]`).classList.add('active');
+    updateThemePreview(currentPersonality);
+  }
+});
+</script>
+</body>
+</html>

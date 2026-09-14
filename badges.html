@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的徽章 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); min-height: 100vh; }
+  .badges { max-width: 1000px; margin: 0 auto; padding: 40px 0 90px; }
+  .badges h1 { text-align: center; font-size: 28px; margin-bottom: 10px; }
+  .badges p { text-align: center; color: var(--ink-faint); font-size: 15px; margin-bottom: 36px; }
+  
+  .progress-card {
+    background: linear-gradient(135deg, #FFEAD9, #FFD4A3);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .progress-card h2 { font-size: 22px; margin-bottom: 16px; }
+  .progress-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+  }
+  .progress-stat {
+    text-align: center;
+  }
+  .progress-stat-value {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--primary-deep);
+  }
+  .progress-stat-label {
+    font-size: 14px;
+    color: var(--primary-deep);
+    font-weight: 800;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+  
+  .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .badge-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 16px rgba(240,116,60,.08);
+    transition: transform .18s;
+  }
+  .badge-card:hover {
+    transform: translateY(-3px);
+  }
+  .badge-card.earned {
+    border: 2px solid var(--green);
+  }
+  .badge-card.in-progress {
+    border: 2px solid var(--primary-soft);
+  }
+  .badge-card.locked {
+    opacity: 0.6;
+  }
+  .badge-header {
+    padding: 24px;
+    text-align: center;
+    position: relative;
+  }
+  .badge-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .badge-name {
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  .badge-level {
+    font-size: 14px;
+    color: var(--ink-faint);
+  }
+  .badge-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .badge-status.earned {
+    background: var(--green);
+    color: white;
+  }
+  .badge-status.in-progress {
+    background: var(--primary-soft);
+    color: var(--primary-deep);
+  }
+  .badge-status.locked {
+    background: var(--ink-faint);
+    color: white;
+  }
+  
+  .badge-body {
+    padding: 20px;
+  }
+  .badge-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .badge-requirements {
+    background: var(--bg-soft);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .requirement-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .requirement-item:last-child {
+    margin-bottom: 0;
+  }
+  .requirement-icon {
+    font-size: 16px;
+  }
+  .requirement-met {
+    color: var(--green);
+  }
+  .requirement-pending {
+    color: var(--primary-deep);
+  }
+  .badge-rewards {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--orange);
+  }
+  .badge-rewards span {
+    background: var(--orange-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+  
+  .training-section {
+    margin-top: 60px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 6px 20px rgba(240,116,60,.08);
+  }
+  .training-section h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .training-courses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  .training-card {
+    background: var(--bg-soft);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .training-card:hover {
+    background: var(--primary-soft);
+    transform: translateY(-2px);
+  }
+  .training-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+  .training-title {
+    font-weight: 800;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+  .training-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  
+  @media (max-width: 768px) {
+    .progress-stats {
+      flex-direction: column;
+      gap: 20px;
+    }
+    .badges-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap badges" id="app">
+    <h1>🏆 我的陪伴者徽章</h1>
+    <p>每一次用心陪伴，都是成长路上的闪亮勋章</p>
+    
+    <!-- 成长进度 -->
+    <div class="progress-card">
+      <h2>成长进度</h2>
+      <div class="progress-stats">
+        <div class="progress-stat">
+          <div class="progress-stat-value">12</div>
+          <div class="progress-stat-label">获得徽章</div>
+        </div>
+        <div class="progress-stat">
+          <div class="progress-stat-value">8</div>
+          <div class="progress-stat-label">进行中</div>
+        </div>
+        <div class="progress-stat">
+          <div class="progress-stat-value">4.2k</div>
+          <div class="progress-stat-label">陪伴时长</div>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 65%"></div>
+      </div>
+      <p style="margin-top: 12px; font-size: 14px;">距离下一等级还需 580 分继续努力</p>
+    </div>
+    
+    <!-- 徽章列表 -->
+    <div class="badges-grid">
+      <!-- 已获得 -->
+      <div class="badge-card earned">
+        <div class="badge-header">
+          <div class="badge-status earned">✓</div>
+          <div class="badge-icon">🐱</div>
+          <div class="badge-name">猫咪专家</div>
+          <div class="badge-level">Lv.3</div>
+        </div>
+        <div class="badge-body">
+          <div class="badge-desc">成功完成50次猫咪陪伴任务，掌握猫咪行为解读技巧</div>
+          <div class="badge-requirements">
+            <div class="requirement-item requirement-met">
+              <span class="requirement-icon">✓</span> 完成50次猫咪陪伴
+            </div>
+            <div class="requirement-item requirement-met">
+              <span class="requirement-icon">✓</span> 解读100次猫咪行为
+            </div>
+            <div class="requirement-item requirement-met">
+              <span class="requirement-icon">✓</span> 获得5个主人好评
+            </div>
+          </div>
+          <div class="badge-rewards">
+            <span>解锁猫行为分析AI</span>
+            <span>宠物店9折</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="badge-card earned">
+        <div class="badge-header">
+          <div class="badge-status earned">✓</div>
+          <div class="badge-icon">🐶</div>
+          <div class="badge-name">训犬能手</div>
+          <div class="badge-level">Lv.2</div>
+        </div>
+        <div class="badge-body">
+          <div class="badge-desc">掌握基础训犬技巧，帮助30只狗狗改善行为习惯</div>
+          <div class="badge-requirements">
+            <div class="requirement-item requirement-met">
+              <span class="requirement-icon">✓</span> 完成30次狗狗陪伴
+            </div>
+            <div class="requirement-item requirement-met">
+              <span class="requirement-icon">✓</span> 学习10种训犬技巧
+            </div>
+            <div class="requirement-item requirement-met">
+              <span class="requirement-icon">✓</span> 训练成功15只狗
+            </div>
+          </div>
+          <div class="badge-rewards">
+            <span>训犬指南手册</span>
+            <span>训练工具包</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 进行中 -->
+      <div class="badge-card in-progress">
+        <div class="badge-header">
+          <div class="badge-status in-progress">→</div>
+          <div class="badge-icon">🏠</div>
+          <div class="badge-name">宅家陪伴王</div>
+          <div class="badge-level">Lv.1</div>
+        </div>
+        <div class="badge-body">
+          <div class="badge-desc">专注家庭宠物陪伴，成为主人最信任的虚拟家人</div>
+          <div class="badge-requirements">
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔄</span> 累计陪伴1000小时 (还差180小时)
+            </div>
+            <div class="requirement-item requirement-met">
+              <span class="requirement-icon">✓</span> 服务10只不同宠物
+            </div>
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔄</span> 获得20个主人好评 (还差5个)
+            </div>
+          </div>
+          <div class="badge-rewards">
+            <span>预计解锁：宠物医生咨询</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="badge-card in-progress">
+        <div class="badge-header">
+          <div class="badge-status in-progress">→</div>
+          <div class="badge-icon">🆘</div>
+          <div class="badge-name">急救小英雄</div>
+          <div class="badge-level">Lv.0</div>
+        </div>
+        <div class="badge-body">
+          <div class="badge-desc">掌握宠物急救知识，关键时刻能救命</div>
+          <div class="badge-requirements">
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔄</span> 完成3次急救课程
+            </div>
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔄</span> 通过急救考试
+            </div>
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔄</span> 参与急救演练
+            </div>
+          </div>
+          <div class="badge-rewards">
+            <span>预计解锁：急救资格认证</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 未解锁 -->
+      <div class="badge-card locked">
+        <div class="badge-header">
+          <div class="badge-status locked">🔒</div>
+          <div class="badge-icon">🏥</div>
+          <div class="badge-name">健康守护者</div>
+          <div class="badge-level">未解锁</div>
+        </div>
+        <div class="badge-body">
+          <div class="badge-desc">精通宠物健康护理，成为主人的健康顾问</div>
+          <div class="badge-requirements">
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔒</span> 需要猫咪专家 Lv.3
+            </div>
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔒</span> 完成50次健康记录
+            </div>
+            <div class="requirement-item requirement-pending">
+              <span class="requirement-icon">🔒</span> 学习营养学课程
+            </div>
+          </div>
+          <div class="badge-rewards">
+            <span>预计解锁：AI健康分析系统</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 技能培训 -->
+    <div class="training-section">
+      <h3>🎓 技能培训中心</h3>
+      <div class="training-courses">
+        <div class="training-card">
+          <div class="training-icon">🧠</div>
+          <div class="training-title">宠物行为学基础</div>
+          <div class="training-desc">学习动物行为原理，读懂宠物的肢体语言和情绪表达</div>
+        </div>
+        <div class="training-card">
+          <div class="training-icon">🍽️</div>
+          <div class="training-title">宠物营养学入门</div>
+          <div class="training-desc">了解不同年龄、品种宠物的营养需求和喂食要点</div>
+        </div>
+        <div class="training-card">
+          <div class="training-icon">❤️</div>
+          <div class="training-title">宠物急救实操</div>
+          <div class="training-desc">掌握心肺复苏、止血、中毒处理等基础急救技能</div>
+        </div>
+        <div class="training-card">
+          <div class="training-icon">🎯</div>
+          <div class="training-title">行为训练技巧</div>
+          <div class="training-desc">学习正向训练方法，帮助宠物纠正不良行为习惯</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-badges');
+</script>
+</body>
+</html>

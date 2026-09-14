@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>创建宠物分身 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); }
+  .create-wrap { max-width: 1060px; margin: 0 auto; padding: 56px 0 90px; display: grid; grid-template-columns: 1fr 340px; gap: 30px; align-items: start; }
+  .stepper { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+  .stp { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 800; color: var(--ink-faint); }
+  .stp .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #F0DFCC; color: #fff; font-size: 13px; }
+  .stp.on { color: var(--primary-deep); }
+  .stp.on .dot { background: var(--grad-primary); box-shadow: 0 5px 12px rgba(240,116,60,.32); }
+  .stp-line { flex: 1; height: 2px; background: #F0DFCC; border-radius: 2px; }
+  .panel { padding: 34px 32px; }
+  .panel h2 { font-size: 20px; margin-bottom: 4px; }
+  .panel .hint { font-size: 13.5px; color: var(--ink-faint); margin-bottom: 26px; }
+  .species-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .sp {
+    border: 1.5px solid var(--line); border-radius: 18px; background: #FFFDFA;
+    padding: 16px 10px; text-align: center; cursor: pointer; transition: all .16s;
+  }
+  .sp .em { font-size: 30px; }
+  .sp div { font-size: 13.5px; font-weight: 700; margin-top: 5px; color: var(--ink-soft); }
+  .sp.on { border-color: var(--primary); background: #FFF3E9; box-shadow: 0 6px 16px rgba(240,116,60,.16); }
+  .sp.on div { color: var(--primary-deep); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .hues { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hue-dot { width: 46px; height: 46px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all .15s; }
+  .hue-dot.on { border-color: var(--ink); transform: scale(1.12); }
+  .upload-zone {
+    border: 2px dashed #F0C9A8; border-radius: 18px; background: #FFFDF9;
+    padding: 30px 20px; text-align: center; color: var(--ink-faint);
+    font-weight: 700; cursor: pointer; transition: all .18s; font-size: 14px;
+  }
+  .upload-zone:hover { border-color: var(--primary-soft); color: var(--primary-deep); background: #FFF6EC; }
+  .upload-zone .big { font-size: 30px; display: block; margin-bottom: 6px; }
+  .thumbs { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .thumb { position: relative; width: 74px; height: 74px; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; border: 2px solid #fff; box-shadow: var(--shadow); }
+  .thumb button {
+    position: absolute; top: -7px; right: -7px; width: 22px; height: 22px;
+    border-radius: 50%; border: none; background: var(--ink); color: #fff;
+    font-size: 12px; line-height: 1; cursor: pointer;
+  }
+  .pv-photo-badge { margin-top: 8px; font-size: 11.5px; color: var(--green-deep); font-weight: 800; }
+  .thumb-tag {
+    position: absolute; left: 5px; bottom: 5px;
+    background: var(--grad-primary); color: #fff;
+    font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px;
+  }
+  .pnav { display: flex; justify-content: space-between; margin-top: 28px; }
+  /* 预览 */
+  .preview { position: sticky; top: 92px; }
+  .preview .card { padding: 30px 26px; text-align: center; }
+  .preview .lab { font-size: 12px; letter-spacing: 2px; font-weight: 800; color: var(--primary-deep); margin-bottom: 18px; }
+  .preview h3 { font-size: 20px; margin-top: 14px; }
+  .preview .meta { font-size: 12.5px; color: var(--ink-faint); margin: 4px 0 14px; }
+  .preview .intro { font-size: 13px; color: var(--ink-soft); background: var(--bg-soft); border-radius: 14px; padding: 12px 14px; margin-top: 14px; text-align: left; }
+  .tips { margin-top: 16px; padding: 16px 20px; background: #E4F5EC; border-radius: 16px; font-size: 12.5px; color: var(--green-deep); line-height: 1.8; text-align: left; }
+  @media (max-width: 900px) { .create-wrap { grid-template-columns: 1fr; } .preview { position: static; } .species-grid { grid-template-columns: repeat(3, 1fr); } .row2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap">
+    <div class="create-wrap">
+      <div>
+        <div class="stepper" id="stepper"></div>
+        <div class="card panel" id="panel"></div>
+      </div>
+
+      <!-- 实时预览 -->
+      <div class="preview">
+        <div class="card">
+          <div class="lab">🐾 AI 分身 · 实时预览</div>
+          <div id="pv-avatar"></div>
+          <h3 id="pv-name">你的毛孩</h3>
+          <div class="meta" id="pv-meta">等待生成…</div>
+          <div id="pv-tags" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center"></div>
+          <div class="intro" id="pv-intro">在左边填写它的信息，这里会实时生成它的分身档案。</div>
+        </div>
+        <div class="tips">💡 <b>原型说明：</b>照片在本浏览器本地压缩保存，作为分身形象展示；正式版将由 AI 从照片学习毛色、五官与神态，生成可动的 3D / 绘本风形象，并通过语音样本模仿叫声。</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-create');
+
+const state = {
+  step: 0,
+  species: 'cat', breed: '', name: '', gender: '男孩子', age: '2岁', city: '', owner: '',
+  style: 'gentle', energy: 60, clingy: 60, mischief: 40,
+  catchphrase: '', habits: [], story: '', hue: 0,
+  photos: [],   // 上传的照片（dataURL，第一张作为分身形象）
+};
+const HABITS = ['爱晒太阳', '怕打雷', '爱藏袜子', '早上叫醒你', '爱玩纸箱', '怕吸尘器', '爱吃醋', '喜欢窗边', '见了粮就疯', '爱踩奶', '追尾巴', '夜半跑酷'];
+const HUE_NAMES = ['暖阳橘', '樱花粉', '抹茶绿', '香芋紫', '奶油黄', '天空蓝'];
+
+function drawStepper() {
+  const names = ['基本信息', '性格与习性', '形象生成'];
+  document.getElementById('stepper').innerHTML = names.map((n, i) =>
+    `<div class="stp ${i <= state.step ? 'on' : ''}"><span class="dot">${i < state.step ? '✓' : i + 1}</span>${n}</div>${i < 2 ? '<div class="stp-line"></div>' : ''}`
+  ).join('');
+}
+
+function updatePreview() {
+  const fakePet = { ...state, id: 'x', photo: state.photos[0], intro: state.story || '（它的故事还空着，等主人来写）', emoji: SPECIES[state.species].emoji };
+  document.getElementById('pv-avatar').innerHTML = avatarHTML(fakePet, 110, 60) +
+    (state.photos.length ? '<div class="pv-photo-badge">🧬 AI 已学习照片特征</div>' : '');
+  document.getElementById('pv-name').textContent = state.name || '你的毛孩';
+  document.getElementById('pv-meta').textContent =
+    `${SPECIES[state.species].label}${state.breed ? ' · ' + state.breed : ''} · ${state.gender} · ${state.age}${state.city ? ' · 📍' + state.city : ''}`;
+  document.getElementById('pv-tags').innerHTML = traitTags(state).map(t => `<span class="tag ${t.c}">${t.t}</span>`).join('');
+  const intro = state.story ? state.story : '在左边填写它的信息，这里会实时生成它的分身档案。';
+  document.getElementById('pv-intro').textContent = intro.length > 60 ? intro.slice(0, 60) + '…' : intro;
+}
+
+const panels = [
+  /* ---------- Step 0 基本信息 ---------- */
+  () => `
+    <h2>先认识一下它 🐾</h2>
+    <div class="hint">这些信息会写进分身的"档案"，决定它是谁</div>
+    <div class="field"><label>上传它的照片 <span class="opt">最多 3 张，第一张将作为分身形象，AI 由此学习它的样子</span></label>
+      <div class="upload-zone" onclick="document.getElementById('f-photos').click()">
+        <span class="big">📸</span>点击上传照片（本地处理，不会外传）
+        <input type="file" id="f-photos" accept="image/*" multiple hidden onchange="handlePhotos(this)">
+      </div>
+      ${state.photos.length ? `<div class="thumbs">${state.photos.map((p, i) =>
+        `<div class="thumb"><img src="${p}" alt="照片${i + 1}">${i === 0 ? '<span class="thumb-tag">形象</span>' : ''}<button type="button" onclick="removePhoto(${i})">✕</button></div>`).join('')}</div>` : ''}
+    </div>
+    <div class="field"><label>它是——</label>
+      <div class="species-grid">
+        ${Object.entries(SPECIES).filter(([k]) => k !== 'other').map(([k, v]) =>
+          `<div class="sp ${state.species === k ? 'on' : ''}" onclick="state.species='${k}';draw()"><span class="em">${v.emoji}</span><div>${v.label}</div></div>`).join('')}
+        <div class="sp ${state.species === 'other' ? 'on' : ''}" onclick="state.species='other';draw()"><span class="em">🐾</span><div>其他</div></div>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>名字 <span class="opt">*</span></label><input class="input" id="f-name" value="${state.name}" placeholder="比如：团团" oninput="state.name=this.value;updatePreview()"></div>
+      <div class="field"><label>品种 <span class="opt">选填</span></label><input class="input" value="${state.breed}" placeholder="比如：橘猫 / 柯基" oninput="state.breed=this.value;updatePreview()"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>性别</label>
+        <select class="input" onchange="state.gender=this.value;updatePreview()">
+          <option ${state.gender === '男孩子' ? 'selected' : ''}>男孩子</option>
+          <option ${state.gender === '女孩子' ? 'selected' : ''}>女孩子</option>
+          <option ${state.gender === '小秘密' ? 'selected' : ''}>小秘密</option>
+        </select>
+      </div>
+      <div class="field"><label>年龄</label>
+        <select class="input" onchange="state.age=this.value;updatePreview()">
+          ${['6个月', '1岁', '2岁', '3岁', '5岁', '8岁', '10岁+', '永远X岁'].map(a => `<option ${state.age === a ? 'selected' : ''}>${a}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>你所在的城市 <span class="opt">选填</span></label><input class="input" value="${state.city}" placeholder="比如：上海" oninput="state.city=this.value;updatePreview()"></div>
+      <div class="field"><label>你的昵称（主人） <span class="opt">选填</span></label><input class="input" value="${state.owner}" placeholder="比如：阿玲" oninput="state.owner=this.value;updatePreview()"></div>
+    </div>
+    <div class="pnav"><span></span><button class="btn" onclick="next()">下一步 →</button></div>`,
+
+  /* ---------- Step 1 性格与习性 ---------- */
+  () => `
+    <h2>它是怎样的性格？💗</h2>
+    <div class="hint">AI 将依据这些学习它的语气、口头禅和小脾气</div>
+    <div class="field"><label>对话风格</label>
+      <div class="species-grid" style="grid-template-columns:repeat(3,1fr)">
+        ${Object.entries(STYLES).map(([k, v]) =>
+          `<div class="sp ${state.style === k ? 'on' : ''}" onclick="state.style='${k}';draw()"><div style="margin:4px 0 2px">${v.label}</div><div style="font-weight:400;font-size:11.5px">${v.desc}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="slider-row"><div class="slider-head"><span>😴 安静</span><b>活力值 ${state.energy}</b><span>⚡ 活力四射</span></div>
+      <input type="range" min="0" max="100" value="${state.energy}" oninput="state.energy=+this.value;this.previousElementSibling.querySelector('b').textContent='活力值 '+this.value;updatePreview()"></div>
+    <div class="slider-row"><div class="slider-head"><span>🕊️ 独立</span><b>黏人度 ${state.clingy}</b><span>🫶 时刻贴贴</span></div>
+      <input type="range" min="0" max="100" value="${state.clingy}" oninput="state.clingy=+this.value;this.previousElementSibling.querySelector('b').textContent='黏人度 '+this.value;updatePreview()"></div>
+    <div class="slider-row"><div class="slider-head"><span>😇 乖巧</span><b>调皮度 ${state.mischief}</b><span>😈 拆家预备</span></div>
+      <input type="range" min="0" max="100" value="${state.mischief}" oninput="state.mischief=+this.value;this.previousElementSibling.querySelector('b').textContent='调皮度 '+this.value;updatePreview()"></div>
+    <div class="row2">
+      <div class="field"><label>它的口头禅 <span class="opt">选填</span></label><input class="input" value="${state.catchphrase}" placeholder="比如：哼。/ 汪汪！" oninput="state.catchphrase=this.value;updatePreview()"></div>
+    </div>
+    <div class="field"><label>它的小习惯 <span class="opt">可多选</span></label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${HABITS.map(h => `<button class="tag ${state.habits.includes(h) ? 'orange' : ''}" style="cursor:pointer;border:1.5px solid ${state.habits.includes(h) ? 'transparent' : 'var(--line)'}"
+          onclick="toggleHabit('${h}')" type="button">${h}</button>`).join('')}
+      </div>
+    </div>
+    <div class="field"><label>它的故事 <span class="opt">写点什么让分身更有灵魂</span></label>
+      <textarea class="input" placeholder="比如：阿玲是空乘，一飞就是三天，团团在家最擅长等门……" oninput="state.story=this.value;updatePreview()">${state.story}</textarea>
+    </div>
+    <div class="pnav"><button class="linkbtn" onclick="prev()">← 上一步</button><button class="btn" onclick="next()">下一步 →</button></div>`,
+
+  /* ---------- Step 2 形象生成 ---------- */
+  () => {
+    const em = SPECIES[state.species].emoji;
+    return `
+    <h2>生成它的分身形象 ✨</h2>
+    <div class="hint">AI 会结合照片与性格设定，生成分身的专属气质与形象</div>
+    <div class="field"><label>形象主色</label>
+      <div class="hues">${[0,1,2,3,4,5].map(i =>
+        `<div class="hue-dot hue-${i} ${state.hue === i ? 'on' : ''}" title="${HUE_NAMES[i]}" onclick="state.hue=${i};draw()"></div>`).join('')}
+      </div>
+    </div>
+    <div class="field" style="margin-top:26px"><label>分身档案确认</label>
+      <div style="background:var(--bg-soft);border-radius:16px;padding:18px 20px;font-size:14px;line-height:2">
+        <b>${state.name || '（未命名）'}</b> · ${SPECIES[state.species].label}${state.breed ? ' · ' + state.breed : ''} · ${state.gender} · ${state.age}<br>
+        性格：<span class="tag orange">${STYLES[state.style].label}</span> <span class="tag green">活力 ${state.energy}</span> <span class="tag pink">黏人 ${state.clingy}</span> <span class="tag purple">调皮 ${state.mischief}</span><br>
+        ${state.catchphrase ? `口头禅：“${state.catchphrase}”<br>` : ''}
+        ${state.habits.length ? `习惯：${state.habits.join(' · ')}` : ''}
+      </div>
+    </div>
+    <div class="pnav"><button class="linkbtn" onclick="prev()">← 上一步</button>
+      <button class="btn" onclick="generate()">✨ 生成 AI 分身并开始陪伴</button></div>`;
+  },
+];
+
+function draw() {
+  drawStepper();
+  document.getElementById('panel').innerHTML = panels[state.step]();
+  updatePreview();
+}
+function next() {
+  if (state.step === 0 && !state.name.trim()) { toast('先给它取个名字吧 🐾'); return; }
+  if (state.step < 2) { state.step++; draw(); }
+}
+function prev() { if (state.step > 0) { state.step--; draw(); } }
+function toggleHabit(h) {
+  const i = state.habits.indexOf(h);
+  if (i >= 0) state.habits.splice(i, 1); else state.habits.push(h);
+  if (state.habits.length > 4) state.habits.pop();
+  draw();
+}
+
+async function handlePhotos(input) {
+  const files = [...(input.files || [])];
+  input.value = '';
+  for (const f of files) {
+    if (state.photos.length >= 3) { toast('最多上传 3 张照片哦'); break; }
+    try {
+      const dataURL = await compressImage(f);
+      state.photos.push(dataURL);
+    } catch (e) { toast('这张图片读取失败了，换一张试试'); }
+  }
+  draw();
+}
+function removePhoto(i) { state.photos.splice(i, 1); draw(); }
+
+function generate() {
+  const vec = {
+    active: state.energy,
+    clingy: state.clingy,
+    calm: Math.round(clamp(100 - state.mischief * 0.7 - state.energy * 0.2, 0, 100)),
+    warm: { gentle: 92, sweet: 88, enthusiast: 80, shy: 68, chatty: 62, aloof: 55 }[state.style],
+    interact: Math.round(clamp(state.energy * 0.45 + state.clingy * 0.3 + 25, 0, 100)),
+  };
+  const pet = {
+    id: 'pet-u-' + Date.now(), userCreated: true,
+    name: state.name.trim(), species: state.species, breed: state.breed || SPECIES[state.species].label,
+    gender: state.gender, age: state.age, city: state.city || '你的城市',
+    owner: (state.owner || '你') + ' · 你',
+    style: state.style, energy: state.energy, clingy: state.clingy, mischief: state.mischief,
+    catchphrase: state.catchphrase, habits: state.habits,
+    intro: state.story ? state.story.slice(0, 60) : `由主人亲手创建的${SPECIES[state.species].label}分身。`,
+    story: state.story || '它的故事，从今天开始写。',
+    emoji: SPECIES[state.species].emoji, hue: state.hue, vec,
+    photo: state.photos[0],
+    photos: state.photos,
+    createdAt: Date.now(),
+  };
+  store.saveUserPet(pet);
+  store.saveProfile({ ...store.getProfile(), name: store.getProfile().name || '' });
+  toast(`✨ ${pet.name} 的分身生成成功！${state.photos.length ? 'AI 已学习它的照片特征' : ''}`);
+  setTimeout(() => goCompanion(pet.id), 600);
+}
+
+draw();
+</script>
+</body>
+</html>

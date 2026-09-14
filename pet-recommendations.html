@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能推荐 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); min-height: 100vh; }
+  .recommendations { max-width: 1000px; margin: 0 auto; padding: 40px 0 90px; }
+  .recommendations h1 { text-align: center; font-size: 28px; margin-bottom: 10px; }
+  .recommendations p { text-align: center; color: var(--ink-faint); font-size: 15px; margin-bottom: 36px; }
+  
+  .pet-selector {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .pet-select {
+      padding: 12px 24px;
+      border-radius: 999px;
+      background: #fff;
+      border: 2px solid var(--line);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .18s;
+  }
+  .pet-select.on {
+      background: var(--grad-primary);
+      color: white;
+      border-color: transparent;
+  }
+  
+  .recommendation-sections {
+    display: grid;
+    gap: 30px;
+  }
+  
+  .recommendation-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(240,116,60,.08);
+  }
+  
+  .recommendation-header {
+      background: linear-gradient(135deg, #FFEAD9, #FFD4A3);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+  }
+  .recommendation-icon {
+      font-size: 28px;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .recommendation-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #FF8A00;
+  }
+  
+  .recommendation-body {
+      padding: 24px;
+  }
+  
+  .time-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+  }
+  
+  .time-slot {
+      background: var(--bg-soft);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .18s;
+      border: 2px solid transparent;
+  }
+  
+  .time-slot:hover {
+      background: var(--primary-soft);
+      border-color: var(--primary-deep);
+      transform: translateY(-2px);
+  }
+  
+  .time-slot.selected {
+      background: var(--primary-soft);
+      border-color: var(--primary-deep);
+      color: var(--primary-deep);
+  }
+  
+  .time-slot h4 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 8px;
+  }
+  
+  .time-slot p {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.4;
+  }
+  
+  .activities {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+  }
+  
+  .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-soft);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .18s;
+  }
+  
+  .activity-item:hover {
+      background: var(--primary-soft);
+      transform: translateX(4px);
+  }
+  
+  .activity-icon {
+      font-size: 24px;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .activity-content {
+      flex: 1;
+  }
+  
+  .activity-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+  }
+  
+  .activity-desc {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.4;
+  }
+  
+  .activity-score {
+      font-size: 14px;
+      font-weight: 800;
+      color: #4CAF50;
+      background: #E8F5E9;
+      padding: 6px 12px;
+      border-radius: 999px;
+  }
+  
+  .save-recommendations {
+      display: block;
+      margin: 40px auto 0;
+      padding: 16px 40px;
+      background: var(--grad-primary);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .18s;
+  }
+  
+  .save-recommendations:hover {
+      transform: scale(1.05);
+  }
+  
+  .ai-insight {
+      background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 24px;
+      border-left: 4px solid #4CAF50;
+  }
+  
+  .ai-insight h4 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #2E7D32;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  }
+  
+  .ai-insight p {
+      font-size: 14px;
+      color: #1B5E20;
+      line-height: 1.5;
+  }
+  
+  @media (max-width: 768px) {
+      .time-slots { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+      .activity-item { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap recommendations" id="app">
+    <h1>🤖 智能推荐引擎</h1>
+    <p>基于你的毛孩子特点和互动习惯，AI为你量身定制最佳陪伴方案</p>
+    
+    <!-- 宠物选择器 -->
+    <div class="pet-selector">
+      <button class="pet-select on">🐱 橘猫 小橘</button>
+      <button class="pet-select">🐟 热带鱼 小金</button>
+      <button class="pet-select">🐦 文鸟 小彩</button>
+    </div>
+    
+    <!-- 推荐 sections -->
+    <div class="recommendation-sections">
+      <!-- 最佳互动时间推荐 -->
+      <div class="recommendation-card">
+        <div class="recommendation-header">
+          <div class="recommendation-icon">⏰</div>
+          <div class="recommendation-title">最佳互动时间</div>
+        </div>
+        <div class="recommendation-body">
+          <p style="margin-bottom: 20px; color: var(--ink-soft); font-size: 14px;">
+            根据小橘的活动规律和你的作息，推荐以下互动时间：
+          </p>
+          
+          <div class="time-slots">
+            <div class="time-slot" onclick="selectTimeSlot('morning')">
+              <h4>🌅 早上</h4>
+              <p>7:00-9:00<br>精力旺盛期</p>
+            </div>
+            <div class="time-slot selected" onclick="selectTimeSlot('afternoon')">
+              <h4>☀️ 下午</h4>
+              <p>14:00-16:00<br>活跃度高</p>
+            </div>
+            <div class="time-slot" onclick="selectTimeSlot('evening')">
+              <h4>🌆 晚上</h4>
+              <p>19:00-21:00<br>亲子时间</p>
+            </div>
+            <div class="time-slot" onclick="selectTimeSlot('night')">
+              <h4>🌙 夜间</h4>
+              <p>21:30-22:30<br>睡前安抚</p>
+            </div>
+          </div>
+          
+          <div class="ai-insight">
+            <h4>🧠 AI分析</h4>
+            <p>小橘在下午时段最活跃，互动效果最佳。早上精力充沛但可能没睡醒，晚上适合轻度互动。</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 互动方式推荐 -->
+      <div class="recommendation-card">
+        <div class="recommendation-header">
+          <div class="recommendation-icon">🎯</div>
+          <div class="recommendation-title">推荐互动方式</div>
+        </div>
+        <div class="recommendation-body">
+          <p style="margin-bottom: 20px; color: var(--ink-soft); font-size: 14px;">
+            根据小橘的性格特点和你之前的互动偏好，推荐以下活动：
+          </p>
+          
+          <div class="activities">
+            <div class="activity-item" onclick="selectActivity('playing')">
+              <div class="activity-icon">🎾</div>
+              <div class="activity-content">
+                <div class="activity-title">玩具互动</div>
+                <div class="activity-desc">毛线球、激光笔，适合消耗精力</div>
+              </div>
+              <div class="activity-score">匹配度 95%</div>
+            </div>
+            
+            <div class="activity-item" onclick="selectActivity('grooming')">
+              <div class="activity-icon">🪥</div>
+              <div class="activity-content">
+                <div class="activity-title">美容护理</div>
+                <div class="activity-desc">梳毛、剪指甲，增进感情</div>
+              </div>
+              <div class="activity-score">匹配度 88%</div>
+            </div>
+            
+            <div class="activity-item" onclick="selectActivity('training')">
+              <div class="activity-icon">🎓</div>
+              <div class="activity-content">
+                <div class="activity-title">技能训练</div>
+                <div class="activity-desc">坐下、握手，提升智力</div>
+              </div>
+              <div class="activity-score">匹配度 82%</div>
+            </div>
+            
+            <div class="activity-item" onclick="selectActivity('relax')">
+              <div class="activity-icon">🧘</div>
+              <div class="activity-content">
+                <div class="activity-title">放松陪伴</div>
+                <div class="activity-desc">轻声说话，安静陪伴</div>
+              </div>
+              <div class="activity-score">匹配度 75%</div>
+            </div>
+          </div>
+          
+          <div class="ai-insight">
+            <h4>🧠 AI分析</h4>
+            <p>小橘属于活泼型，玩具互动最匹配。建议每天进行2-3次15-20分钟的集中互动，保持规律作息。</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 个性化内容推荐 -->
+      <div class="recommendation-card">
+        <div class="recommendation-header">
+          <div class="recommendation-icon">📱</div>
+          <div class="recommendation-title">个性化内容</div>
+        </div>
+        <div class="recommendation-body">
+          <p style="margin-bottom: 20px; color: var(--ink-soft); font-size: 14px;">
+            基于小橘的兴趣和你的偏好，推荐以下内容：
+          </p>
+          
+          <div class="activities">
+            <div class="activity-item">
+              <div class="activity-icon">🎵</div>
+              <div class="activity-content">
+                <div class="activity-title">音乐推荐</div>
+                <div class="activity-desc">轻音乐、自然声音，帮助放松</div>
+              </div>
+              <div class="activity-score">匹配度 92%</div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon">📖</div>
+              <div class="activity-content">
+                <div class="activity-title">阅读内容</div>
+                <div class="activity-desc">猫咪养护知识、行为心理学</div>
+              </div>
+              <div class="activity-score">匹配度 85%</div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon">🎬</div>
+              <div class="activity-content">
+                <div class="activity-title">视频推荐</div>
+                <div class="activity-desc">猫咪纪录片、训练教程</div>
+              </div>
+              <div class="activity-score">匹配度 78%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="save-recommendations" onclick="saveRecommendations()">
+      保存推荐方案
+    </button>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-recommendations');
+
+let selectedTimeSlot = 'afternoon';
+let selectedActivities = ['playing', 'grooming'];
+
+function selectTimeSlot(slot) {
+  selectedTimeSlot = slot;
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+function selectActivity(activity) {
+  const index = selectedActivities.indexOf(activity);
+  if (index > -1) {
+    selectedActivities.splice(index, 1);
+  } else {
+    selectedActivities.push(activity);
+  }
+  
+  const activityItem = event.currentTarget;
+  if (selectedActivities.includes(activity)) {
+    activityItem.style.background = 'var(--primary-soft)';
+    activityItem.style.borderColor = 'var(--primary-deep)';
+  } else {
+    activityItem.style.background = 'var(--bg-soft)';
+    activityItem.style.borderColor = 'transparent';
+  }
+}
+
+function saveRecommendations() {
+  const recommendations = {
+    petId: 'pet1',
+    bestTime: selectedTimeSlot,
+    activities: selectedActivities,
+    savedAt: Date.now()
+  };
+  
+  store.saveRecommendations(recommendations);
+  toast('✅ 智能推荐方案已保存！');
+}
+
+// 页面加载时读取已保存的推荐
+window.addEventListener('load', () => {
+  const saved = store.getRecommendations('pet1');
+  if (saved) {
+    if (saved.bestTime) {
+      selectedTimeSlot = saved.bestTime;
+      document.querySelector(`[onclick="selectTimeSlot('${saved.bestTime}')"]`).classList.add('selected');
+    }
+    if (saved.activities) {
+      selectedActivities = saved.activities;
+      saved.activities.forEach(activity => {
+        const element = document.querySelector(`[onclick="selectActivity('${activity}')"]`);
+        if (element) {
+          element.style.background = 'var(--primary-soft)';
+          element.style.borderColor = 'var(--primary-deep)';
+        }
+      });
+    }
+  }
+});
+</script>
+</body>
+</html>

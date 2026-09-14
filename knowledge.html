@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宠物知识库 · 它伴 TaBan</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #FFF9F2, #FFF3E6); min-height: 100vh; }
+  .knowledge { max-width: 1200px; margin: 0 auto; padding: 40px 0 90px; }
+  .knowledge h1 { text-align: center; font-size: 28px; margin-bottom: 10px; }
+  .knowledge p { text-align: center; color: var(--ink-faint); font-size: 15px; margin-bottom: 36px; }
+  
+  .search-box {
+    max-width: 600px;
+    margin: 0 auto 40px;
+    position: relative;
+  }
+  .search-input {
+    width: 100%;
+    padding: 16px 50px 16px 20px;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    font-size: 16px;
+    transition: border-color .18s;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--primary-soft);
+  }
+  .search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--grad-primary);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  
+  .category-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .category-btn {
+    padding: 12px 24px;
+    border-radius: 999px;
+    background: #fff;
+    border: 2px solid var(--line);
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .category-btn:hover {
+    border-color: var(--primary-soft);
+    color: var(--primary-deep);
+  }
+  .category-btn.on {
+    background: var(--grad-primary);
+    color: white;
+    border-color: transparent;
+  }
+  
+  .knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 60px;
+  }
+  .knowledge-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 16px rgba(240,116,60,.08);
+    transition: transform .18s;
+    cursor: pointer;
+  }
+  .knowledge-card:hover {
+    transform: translateY(-3px);
+  }
+  .knowledge-card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #FFEAD9, #FFD4A3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .knowledge-icon {
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.3);
+    border-radius: 12px;
+  }
+  .knowledge-title {
+    font-size: 16px;
+    font-weight: 900;
+    flex: 1;
+  }
+  .knowledge-card-body {
+    padding: 20px;
+  }
+  .knowledge-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .knowledge-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .knowledge-tag {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #F0F0F0;
+    color: var(--ink-soft);
+  }
+  .knowledge-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .knowledge-actions button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 999px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+    font-size: 13px;
+  }
+  .btn-read {
+    background: var(--primary-soft);
+    color: var(--primary-deep);
+  }
+  .btn-read:hover {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-course {
+    background: #FFEAD9;
+    color: var(--primary-deep);
+  }
+  .btn-course:hover {
+    background: #FFD4A3;
+  }
+  
+  .ai-qa {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 6px 20px rgba(240,116,60,.08);
+    margin-bottom: 40px;
+  }
+  .ai-qa h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .ai-form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+  .ai-input {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    font-size: 15px;
+  }
+  .ai-btn {
+    padding: 14px 28px;
+    border-radius: 999px;
+    background: var(--grad-primary);
+    color: white;
+    border: none;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .ai-history {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .qa-item {
+    background: var(--bg-soft);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .qa-question {
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--primary-deep);
+  }
+  .qa-answer {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 768px) {
+    .knowledge-grid { grid-template-columns: 1fr; }
+    .category-tabs { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav" id="nav"></nav>
+
+  <div class="wrap knowledge" id="app">
+    <h1>📚 宠物知识库</h1>
+    <p>科学养宠、行为解读、健康守护，AI 助你成为专业家长</p>
+    
+    <!-- AI 智能问答 -->
+    <div class="ai-qa">
+      <h2>🤖 AI 宠物助手</h2>
+      <div class="ai-form">
+        <input class="ai-input" type="text" id="ai-query" placeholder="输入你的宠物问题，比如：猫总掉毛怎么办？">
+        <button class="ai-btn" onclick="askAI()">立即提问</button>
+      </div>
+      <div class="ai-history" id="ai-history">
+        <div class="qa-item">
+          <div class="qa-question">👋 示例：狗狗不吃东西怎么办？</div>
+          <div class="qa-answer">狗狗不食可能有多种原因：1）环境变化或应激反应；2）天气炎热影响食欲；3）口腔或消化问题；4）换粮不适。建议先观察24小时，持续不食应就医。可尝试增加食物香味、少食多餐、饭后散步等温和方式刺激食欲。</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 搜索框 -->
+    <div class="search-box">
+      <input class="search-input" type="text" id="search" placeholder="搜索养宠知识...">
+      <button class="search-btn" onclick="searchKnowledge()">搜索</button>
+    </div>
+    
+    <!-- 分类标签 -->
+    <div class="category-tabs">
+      <button class="category-btn on" onclick="filterCategory('all')">全部</button>
+      <button class="category-btn" onclick="filterCategory('care')">日常护理</button>
+      <button class="category-btn" onclick="filterCategory('health')">健康医疗</button>
+      <button class="category-btn" onclick="filterCategory('behavior')">行为训练</button>
+      <button class="category-btn" onclick="filterCategory('nutrition')">营养喂养</button>
+      <button class="category-btn" onclick="filterCategory('emergency')">急救常识</button>
+    </div>
+    
+    <!-- 知识卡片 -->
+    <div class="knowledge-grid">
+      <!-- 护理类 -->
+      <div class="knowledge-card" onclick="openKnowledge('cat-grooming')">
+        <div class="knowledge-card-header">
+          <div class="knowledge-icon">🛁</div>
+          <div class="knowledge-title">猫咪梳毛指南</div>
+        </div>
+        <div class="knowledge-card-body">
+          <div class="knowledge-desc">长毛猫每天梳毛，短毛猫每周2-3次。正确梳毛手法：先顺着毛流，再逆着轻推掉浮毛...</div>
+          <div class="knowledge-tags">
+            <span class="knowledge-tag">护理</span>
+            <span class="knowledge-tag">猫咪</span>
+            <span class="knowledge-tag">定期</span>
+          </div>
+          <div class="knowledge-actions">
+            <button class="btn-read">阅读全文</button>
+            <button class="btn-course">视频课程</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="knowledge-card" onclick="openKnowledge('dog-bath')">
+        <div class="knowledge-card-header">
+          <div class="knowledge-icon">🚿</div>
+          <div class="knowledge-title">狗狗洗澡正确方法</div>
+        </div>
+        <div class="knowledge-card-body">
+          <div class="knowledge-desc">2-4周洗一次，水温37℃左右。洗澡前先梳毛，避免水入耳朵，重点清洁腹部和脚垫...</div>
+          <div class="knowledge-tags">
+            <span class="knowledge-tag">护理</span>
+            <span class="knowledge-tag">狗狗</span>
+            <span class="knowledge-tag">清洁</span>
+          </div>
+          <div class="knowledge-actions">
+            <button class="btn-read">阅读全文</button>
+            <button class="btn-course">视频课程</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 健康类 -->
+      <div class="knowledge-card" onclick="openKnowledge('vaccine-schedule')">
+        <div class="knowledge-card-header">
+          <div class="knowledge-icon">💉</div>
+          <div class="knowledge-title">宠物疫苗接种时间表</div>
+        </div>
+        <div class="knowledge-card-body">
+          <div class="knowledge-desc">幼犬6-8周开始接种第一针猫三联，每3-4周一针，共3针。狂犬疫苗3月龄后接种，每年加强...</div>
+          <div class="knowledge-tags">
+            <span class="knowledge-tag">健康</span>
+            <span class="knowledge-tag">疫苗</span>
+            <span class="knowledge-tag">必备</span>
+          </div>
+          <div class="knowledge-actions">
+            <button class="btn-read">查看时间表</button>
+            <button class="btn-course">提醒设置</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 行为类 -->
+      <div class="knowledge-card" onclick="openKnowledge('cat-scratching')">
+        <div class="knowledge-card-header">
+          <div class="knowledge-icon">🐾</div>
+          <div class="knowledge-title">猫咪乱抓家具怎么办？</div>
+        </div>
+        <div class="knowledge-card-body">
+          <div class="knowledge-desc">猫咪抓磨天性无法改变，但可引导。准备猫抓板，定期修剪指甲，用柑橘味喷雾 deterrent 家具...</div>
+          <div class="knowledge-tags">
+            <span class="knowledge-tag">行为</span>
+            <span class="knowledge-tag">训练</span>
+            <span class="knowledge-tag">猫咪</span>
+          </div>
+          <div class="knowledge-actions">
+            <button class="btn-read">解决方案</button>
+            <button class="btn-course">训练课程</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 营养类 -->
+      <div class="knowledge-card" onclick="openKnowledge('cat-food-choices')">
+        <div class="knowledge-card-header">
+          <div class="knowledge-icon">🍽️</div>
+          <div class="knowledge-title">如何选择猫粮？</div>
+        </div>
+        <div class="knowledge-card-body">
+          <div class="knowledge-desc">看成分表：前三位应是肉类蛋白，避免谷物填充。根据年龄选择幼猫/成猫/老年猫粮...</div>
+          <div class="knowledge-tags">
+            <span class="knowledge-tag">营养</span>
+            <span class="knowledge-tag">喂养</span>
+            <span class="knowledge-tag">选购</span>
+          </div>
+          <div class="knowledge-actions">
+            <button class="btn-read">选购指南</button>
+            <button class="btn-course">计算器</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 急救类 -->
+      <div class="knowledge-card" onclick="openKnowledge('pet-firstaid')">
+        <div class="knowledge-card-header">
+          <div class="knowledge-icon">🚑</div>
+          <div class="knowledge-title">宠物急救常识</div>
+        </div>
+        <div class="knowledge-card-body">
+          <div class="knowledge-desc">学会基本急救：中毒立即送医，外伤清洁包扎，呼吸困难侧卧保持气道畅通。家中准备急救包...</div>
+          <div class="knowledge-tags">
+            <span class="knowledge-tag">急救</span>
+            <span class="knowledge-tag">必备</span>
+            <span class="knowledge-tag">安全</span>
+          </div>
+          <div class="knowledge-actions">
+            <button class="btn-read">急救手册</button>
+            <button class="btn-course">急救课</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderChrome('nav-knowledge');
+
+// AI 智能问答
+function askAI() {
+  const input = document.getElementById('ai-query');
+  const query = input.value.trim();
+  if (!query) return;
+  
+  const history = document.getElementById('ai-history');
+  const userQ = document.createElement('div');
+  userQ.className = 'qa-item';
+  userQ.innerHTML = `<div class="qa-question">❓ ${escapeHTML(query)}</div><div class="qa-answer">AI 正在思考中...</div>`;
+  history.appendChild(userQ);
+  
+  input.value = '';
+  history.scrollTop = history.scrollHeight;
+  
+  // 模拟 AI 回复
+  setTimeout(() => {
+    userQ.innerHTML = `
+      <div class="qa-question">❓ ${escapeHTML(query)}</div>
+      <div class="qa-answer">🤖 AI 助手：${escapeHTML(generateAIAnswer(query))}</div>
+    `;
+    history.scrollTop = history.scrollHeight;
+  }, 1500);
+}
+
+function generateAIAnswer(query) {
+  const answers = {
+    '猫总掉毛': '猫咪掉毛是正常现象，换季时更严重。建议：1）每天梳毛；2）补充Omega-3脂肪酸；3）控制洗澡频率；4）保持环境湿度50-60%。掉毛异常严重应就医。',
+    '狗狗不吃': '不食24小时内可观察：是否换了环境？天气热？牙痛？可尝试：用鸡肉汤泡粮、少食多餐、饭后散步。持续超过24小时应就医。',
+    '猫咪吐': '偶尔吐毛球正常。频繁呕吐需就医：观察呕吐物内容（食物/毛球/黄水）、频率、精神状态。可能原因：毛球症、肠胃炎、异物、寄生虫。',
+    '猫乱尿': '乱尿标记领地或抗议。解决办法：1）及时清理猫砂；2）多个猫砂盆；3）使用除味剂；4）减少应激；5）绝育。乱尿就医排除疾病。'
+  };
+  
+  for (const [key, answer] of Object.entries(answers)) {
+    if (query.includes(key)) return answer;
+  }
+  
+  return '这个问题需要更具体的描述。比如：是幼犬还是成犬？症状持续多久？有无其他异常？这些信息有助于我给出更准确的建议。';
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+function searchKnowledge() {
+  const search = document.getElementById('search').value;
+  if (!search) return;
+  alert(`正在搜索"${search}"的相关知识...`);
+}
+
+function filterCategory(category) {
+  document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('on'));
+  event.target.classList.add('on');
+  // 这里可以添加筛选逻辑
+}
+
+function openKnowledge(id) {
+  alert(`正在打开知识文章：${id}`);
+}
+</script>
+</body>
+</html>
